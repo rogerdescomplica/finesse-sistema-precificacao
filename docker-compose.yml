@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: finesse-postgres
+    environment:
+      POSTGRES_DB: finesse_db
+      POSTGRES_USER: finesse_user
+      POSTGRES_PASSWORD: finesse_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-init.sql
+    networks:
+      - finesse-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finesse_user -d finesse_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: finesse-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@finesse.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
+    networks:
+      - finesse-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  finesse-network:
+    driver: bridge
