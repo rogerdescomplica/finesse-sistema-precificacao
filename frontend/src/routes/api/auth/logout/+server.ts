@@ -1,7 +1,7 @@
 // src/routes/api/auth/logout/+server.ts
 
 import type { RequestHandler } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { BACKEND_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ cookies }) => {
@@ -10,10 +10,8 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 		// Se tem token, tenta revogar no backend
 		if (accessToken) {
-			const backendUrl = env.BACKEND_URL;
-
 			try {
-				await fetch(`${backendUrl}/api/auth/logout`, {
+				await fetch(`${BACKEND_URL}/api/auth/logout`, {
 					method: 'POST',
 					headers: {
 						Authorization: `Bearer ${accessToken}`,

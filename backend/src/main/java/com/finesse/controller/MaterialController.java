@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.finesse.entity.Material;
+import com.finesse.dto.PageResponse;
 import com.finesse.service.MaterialService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,14 +35,14 @@ public class MaterialController {
     @Operation(summary = "Listar materiais", description = "Suporta paginação e filtros por produto e status")
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<Material>> list(
+    public ResponseEntity<PageResponse<Material>> list(
             @RequestParam(required = false) String produto,
             @RequestParam(required = false) Boolean ativo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sort) {
         Page<Material> result = materialService.list(produto, ativo, page, size, sort);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(PageResponse.from(result));
     }
 
     @Operation(summary = "Obter material por ID")

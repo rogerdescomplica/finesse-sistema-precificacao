@@ -1,5 +1,5 @@
 <script lang="ts">
-	type ViewState = 'dashboard' | 'materiais' | 'servicos' | 'editor-magico' | 'configuracoes' | 'perfil';
+	export type ViewState = 'dashboard' | 'materiais' | 'servicos' | 'configuracoes' | 'perfil';
 
 	interface Props {
 		currentView: ViewState;
@@ -21,7 +21,6 @@
 		dashboard: 'Visão Geral',
 		materiais: 'Gestão de Materiais',
 		servicos: 'Catálogo de Serviços',
-		'editor-magico': 'Editor Inteligente',
 		configuracoes: 'Configurações',
 		perfil: 'Perfil'
 	};

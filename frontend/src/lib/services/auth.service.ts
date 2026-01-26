@@ -1,4 +1,5 @@
 // src/lib/services/auth.service.ts
+import { isValidEmail, isValidPassword } from '$lib/utils/validators';
 
 export interface LoginCredentials {
 	email: string;
@@ -22,11 +23,18 @@ export interface UsuarioInfo {
 	id: number;
 	nome: string;
 	email: string;
-	papel: string;
-	nomeClinica: string;
-	clinicaId: number;
+	roles: string[];
 }
 
+type CheckResponse = {
+  authenticated: boolean;
+  usuario?: UsuarioInfo;
+};
+
+/**
+ * Resposta de autenticação do backend
+ * Com HttpOnly cookies, tokens não são retornados
+ */
 export interface LoginResponse {
 	tokenAcesso: string;
 	tokenRefresh: string;
@@ -35,14 +43,20 @@ export interface LoginResponse {
 }
 
 export interface ErrorResponse {
-	error: string;
+	error?: string;
 	message?: string;
 	details?: unknown;
 }
 
+// ==================== SERVICE ====================
+
 class AuthService {
 	private readonly baseUrl = '/api/auth';
 
+	/**
+	 * Realiza login com email e senha
+	 * @throws {Error} Se credenciais inválidas ou erro de rede
+	 */
 	/**
 	 * Faz login chamando o endpoint interno /api/auth/login
 	 * Service faz fetch para o PROXY INTERNO
@@ -66,7 +80,8 @@ class AuthService {
 	}
 
 	/**
-	 * Faz logout
+	 * Realiza logout (limpa cookie de sessão)
+	 * @throws {Error} Se erro ao comunicar com o servidor
 	 */
 	async logout(): Promise<void> {
 		const response = await fetch(`${this.baseUrl}/logout`, {
@@ -81,18 +96,19 @@ class AuthService {
 	}
 
 	/**
-	 * Registra novo usuário e clínica
+	 * Registra novo usuário
+	 * @throws {Error} Se dados inválidos ou erro no servidor
 	 */
 	async register(data: RegisterData): Promise<LoginResponse> {
 		if (data.senha !== data.confirmarSenha) {
 			throw new Error('As senhas não coincidem');
 		}
 
-		if (data.senha.length < 6) {
+		if (!isValidPassword(data.senha)) {
 			throw new Error('A senha deve ter pelo menos 6 caracteres');
 		}
 
-		if (!data.email.includes('@')) {
+		if (!isValidEmail(data.email)) {
 			throw new Error('Email inválido');
 		}
 
@@ -112,7 +128,9 @@ class AuthService {
 	}
 
 	/**
-	 * Atualiza o token usando refresh token
+	 * Atualiza token de sessão (se backend suportar)
+	 * Opcional com HttpOnly cookies
+	 * @throws {Error} Se sessão expirada ou erro de rede
 	 */
 	async refresh(): Promise<LoginResponse> {
 		const response = await fetch(`${this.baseUrl}/refresh`, {
@@ -131,53 +149,42 @@ class AuthService {
 	/**
 	 * Verifica se há uma sessão ativa (cookies presentes)
 	 */
-	async checkSession(): Promise<boolean> {
+	async checkSession(): Promise<UsuarioInfo | null> {
 		try {
 			const response = await fetch(`${this.baseUrl}/check`, {
-				method: 'GET',
-				credentials: 'include'
+			method: 'GET',
+			credentials: 'include'
 			});
 
-			return response.ok;
-		} catch {
-			return false;
-		}
-	}
+			if (!response.ok) return null;
 
-	/**
-	 * Obtém informações do usuário atual
-	 */
-	async getCurrentUser(): Promise<UsuarioInfo | null> {
-		try {
-			const response = await fetch(`${this.baseUrl}/me`, {
-				method: 'GET',
-				credentials: 'include'
-			});
-
-			if (!response.ok) {
-				return null;
-			}
-
-			return response.json();
+			const data = (await response.json()) as CheckResponse;
+			return data.usuario ?? null;
 		} catch {
 			return null;
 		}
 	}
 
 	/**
-	 * Função padronizada para extrair mensagens de erro
+	 * Extrai mensagem de erro da resposta HTTP
+	 * @private
 	 */
 	private async extractErrorMessage(response: Response, fallback: string): Promise<string> {
 		try {
-			// Tenta parsear como JSON primeiro
-			const data = (await response.clone().json()) as ErrorResponse;
-			return data?.error || data?.message || fallback;
-		} catch {
-			// Se falhar, lê como texto
+			const contentType = response.headers.get('content-type');
+			if (contentType?.includes('application/json')) {
+				const data = (await response.json()) as ErrorResponse;
+				return data?.error || data?.message || fallback;
+			}
+
 			const text = await response.text();
-			return text || fallback;
+			return text.trim() || fallback;
+		} catch (error) {
+			console.error('Erro ao extrair mensagem:', error);
+			return fallback;
 		}
 	}
 }
+
 
 export const authService = new AuthService();

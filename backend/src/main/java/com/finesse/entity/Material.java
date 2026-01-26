@@ -26,7 +26,6 @@ public class Material {
 
     @NotNull(message = "Unidade de medida é obrigatória")
     @Column(name = "unidade_medida", nullable = false, length = 20)
-    @Convert(converter = com.finesse.entity.converter.UnidadeMedidaConverter.class)
     private UnidadeMedida unidadeMedida;
 
     @NotNull(message = "Volume da embalagem é obrigatório")
@@ -40,7 +39,7 @@ public class Material {
     private BigDecimal precoEmbalagem;
 
     @NotNull(message = "Custo unitário é obrigatório")
-    @Column(name = "custo_unitario", nullable = false, precision = 10, scale = 6)
+    @Column(name = "custo_unitario", nullable = false, precision = 10, scale = 6, insertable = false, updatable = false)
     private BigDecimal custoUnitario;
 
     @Column(name = "observacoes", length = 500)
@@ -66,25 +65,14 @@ public class Material {
     @PrePersist
     protected void onCreate() {
         dataAtualizacao = LocalDateTime.now();
-        calcularCustoUnitario();
     }
 
     @PreUpdate
     protected void onUpdate() {
         dataAtualizacao = LocalDateTime.now();
-        calcularCustoUnitario();
     }
 
-    /**
-     * Calcula o custo unitário com base no preço e volume da embalagem
-     */
-    private void calcularCustoUnitario() {
-        if (precoEmbalagem != null && volumeEmbalagem != null && 
-            volumeEmbalagem.compareTo(BigDecimal.ZERO) > 0) {
-            this.custoUnitario = precoEmbalagem.divide(volumeEmbalagem, 6, 
-                java.math.RoundingMode.HALF_UP);
-        }
-    }
+    // custo_unitario é coluna gerada pelo banco (stored), não calcular nem persistir via JPA
 
     // Getters and Setters
     public Long getId() {

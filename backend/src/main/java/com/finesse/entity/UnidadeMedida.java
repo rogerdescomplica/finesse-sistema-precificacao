@@ -4,12 +4,12 @@ package com.finesse.entity;
  * Enumeração das unidades de medida utilizadas no sistema
  */
 public enum UnidadeMedida {
-    UNIDADE("un", "Unidade"),
-    METRO("m", "Metro"),
-    MILILITRO("ml", "Mililitro"),
-    GRAMA("g", "Grama"),
-    LITRO("l", "Litro"),
-    QUILOGRAMA("kg", "Quilograma");
+    UN("UN", "Unidade"),
+    M("M", "Metro"),
+    ML("ML", "Mililitro"),
+    G("G", "Grama"),
+    L("L", "Litro"),
+    KG("KG", "Quilograma");
 
     private final String sigla;
     private final String descricao;
@@ -29,14 +29,14 @@ public enum UnidadeMedida {
 
     public static UnidadeMedida fromString(String value) {
         if (value == null) return null;
-        String v = value.trim().toLowerCase();
+        String v = value.trim().toUpperCase();
         switch (v) {
-            case "un": case "unidade": return UNIDADE;
-            case "m": case "metro": return METRO;
-            case "ml": case "mililitro": return MILILITRO;
-            case "g": case "grama": return GRAMA;
-            case "l": case "litro": return LITRO;
-            case "kg": case "quilograma": return QUILOGRAMA;
+            case "UN": case "UNIDADE": return UN;
+            case "M": case "METRO": return M;
+            case "ML": case "MILILITRO": return ML;
+            case "G": case "GRAMA": return G;
+            case "L": case "LITRO": return L;
+            case "KG": case "QUILOGRAMA": return KG;
             default: throw new IllegalArgumentException("UnidadeMedida inválida: " + value);
         }
     }

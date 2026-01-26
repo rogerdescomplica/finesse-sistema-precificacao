@@ -1,131 +1,100 @@
 // src/routes/api/material/+server.ts
+import { env } from '$env/dynamic/private';
+import { json, type RequestHandler } from '@sveltejs/kit';
 
-import { env } from '$env/dynamic/private'
-import type { RequestHandler } from '@sveltejs/kit'
-import { json } from '@sveltejs/kit'
+const BACKEND_URL = env.BACKEND_URL ?? 'http://localhost:8080';
 
-// PROXY para listar e criar materiais
-// Backend aceita tanto /api/material quanto /api/materiais
-const BACKEND_URL = env.BACKEND_URL || 'http://localhost:8080'
-
-// GET - Listar todos os materiais (com suporte a paginação e filtros)
-export const GET: RequestHandler = async ({ url, fetch, cookies }) => {
+async function readBackendError(res: Response): Promise<string> {
 	try {
-        // Lê cookies de autenticação definidos pelo backend
-        const access = cookies.get('access_token')
-        const refresh = cookies.get('refresh_token')
-        if (!access && !refresh) {
-            return json({ error: 'Não autenticado' }, { status: 401 })
-        }
-
-		// Extrai os query params da URL (produto, ativo, page, size, sort)
-		const searchParams = url.searchParams
-		const queryString = searchParams.toString()
-
-		// Monta a URL completa com query params
-		const backendUrl = queryString 
-			? `${BACKEND_URL}/api/materiais?${queryString}`
-			: `${BACKEND_URL}/api/materiais`
-
-		// Chama o backend Spring Boot
-        const response = await fetch(backendUrl, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Cookie: [`access_token=${access ?? ''}`, refresh ? `refresh_token=${refresh}` : ''].filter(Boolean).join('; ')
-            }
-        })
-
-		// Se o backend retornar erro
-		if (!response.ok) {
-			try {
-				const errorData = await response.clone().json()
-				return json(
-					{ error: errorData.error || errorData.message || 'Erro ao carregar materiais' },
-					{ status: response.status }
-				)
-			} catch {
-				return json({ error: 'Erro ao carregar materiais' }, { status: response.status })
-			}
+		const ct = res.headers.get('content-type') ?? '';
+		if (ct.includes('application/json')) {
+			const err = await res.clone().json();
+			return err?.error || err?.message || `Erro no backend (${res.status})`;
 		}
+	} catch {
+		// ignore
+	}
+	const text = await res.text().catch(() => '');
+	return text || `Erro no backend (${res.status})`;
+}
 
-		// Backend retornou sucesso (Page<Material>)
-		const body = await response.json()
+const unitMap = {
+	UN: 'UN',
+	KG: 'KG',
+	G: 'G',
+	L: 'L',
+	ML: 'ML',
+	M: 'M'
+} as const;
 
-        return json(body, { status: 200 })
-	} catch (error) {
-		console.error('Erro no proxy GET materiais:', error)
-		return json({ error: 'Erro interno do servidor' }, { status: 500 })
+type UnitKey = keyof typeof unitMap;
+
+function normalizeUnitToBackend(data: unknown): void {
+	if (typeof data !== 'object' || data === null) return;
+	if (!('unidadeMedida' in data)) return;
+
+	const u = (data as { unidadeMedida?: unknown }).unidadeMedida;
+	if (typeof u === 'string' && (u as string) in unitMap) {
+		(data as { unidadeMedida?: UnitKey }).unidadeMedida = unitMap[u as UnitKey];
 	}
 }
+
+// GET - Listar todos os materiais (com paginação/filtros)
+export const GET: RequestHandler = async ({ url, fetch, request }) => {
+	try {
+		const cookie = request.headers.get('cookie');
+		if (!cookie) return json({ error: 'Não autenticado' }, { status: 401 });
+
+		// copia params (não muta o original)
+		const params = new URLSearchParams(url.searchParams);
+
+		// normaliza sort para apenas a propriedade
+		const sortParam = params.get('sort');
+		if (sortParam) params.set('sort', sortParam.split(',')[0]);
+
+		const qs = params.toString();
+		const backendUrl = qs ? `${BACKEND_URL}/api/material?${qs}` : `${BACKEND_URL}/api/material`;
+
+		const res = await fetch(backendUrl, {
+			method: 'GET',
+			headers: {
+				cookie,
+				'content-type': 'application/json'
+			}
+		});
+
+		if (!res.ok) return json({ error: await readBackendError(res) }, { status: res.status });
+
+		return json(await res.json(), { status: 200 });
+	} catch (error) {
+		console.error('Erro no proxy GET materiais:', error);
+		return json({ error: 'Erro interno do servidor' }, { status: 500 });
+	}
+};
 
 // POST - Criar novo material
-// Requer role ADMIN ou MANAGER
-export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
+export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
-        const access = cookies.get('access_token')
-        const refresh = cookies.get('refresh_token')
-        if (!access && !refresh) {
-            return json({ error: 'Não autenticado' }, { status: 401 })
-        }
+		const cookie = request.headers.get('cookie');
+		if (!cookie) return json({ error: 'Não autenticado' }, { status: 401 });
 
-		// Pega os dados do formulário
-		const data = await request.json()
+		const data: unknown = await request.json();
+		normalizeUnitToBackend(data);
 
-		// Validação básica (mesma do backend com @Valid)
-		if (!data.produto || String(data.produto).trim().length === 0) {
-			return json({ error: 'Produto é obrigatório' }, { status: 400 })
-		}
+		const res = await fetch(`${BACKEND_URL}/api/material`, {
+			method: 'POST',
+			headers: {
+				cookie,
+				'content-type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		});
 
-		if (!data.unidadeMedida) {
-			return json({ error: 'Unidade de medida é obrigatória' }, { status: 400 })
-		}
+		if (!res.ok) return json({ error: await readBackendError(res) }, { status: res.status });
 
-		// Validação de unidade de medida (enum no backend)
-		const validUnits = ['UN', 'KG', 'G', 'L', 'ML']
-		if (!validUnits.includes(data.unidadeMedida)) {
-			return json({ error: 'Unidade de medida inválida. Use: UN, KG, G, L ou ML' }, { status: 400 })
-		}
-
-		if (!data.volumeEmbalagem || Number(data.volumeEmbalagem) <= 0) {
-			return json({ error: 'Volume da embalagem deve ser maior que zero' }, { status: 400 })
-		}
-
-		if (!data.precoEmbalagem || Number(data.precoEmbalagem) <= 0) {
-			return json({ error: 'Preço da embalagem deve ser maior que zero' }, { status: 400 })
-		}
-
-		if (data.custoUnitario === undefined || data.custoUnitario === null) {
-			return json({ error: 'Custo unitário é obrigatório' }, { status: 400 })
-		}
-
-		// Chama o backend Spring Boot
-        const response = await fetch(`${BACKEND_URL}/api/materiais`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Cookie: [`access_token=${access ?? ''}`, refresh ? `refresh_token=${refresh}` : ''].filter(Boolean).join('; ')
-            },
-            body: JSON.stringify(data)
-        })
-
-		// Se o backend retornar erro
-		if (!response.ok) {
-			try {
-				const errorData = await response.clone().json()
-				return json(
-					{ error: errorData.error || errorData.message || 'Erro ao criar material' },
-					{ status: response.status }
-				)
-			} catch {
-				return json({ error: 'Erro ao criar material' }, { status: response.status })
-			}
-		}
-
-        const body = await response.json()
-        return json(body, { status: 201 })
+		return json(await res.json(), { status: 201 });
 	} catch (error) {
-		console.error('Erro no proxy POST materiais:', error)
-		return json({ error: 'Erro interno do servidor' }, { status: 500 })
+		console.error('Erro no proxy POST materiais:', error);
+		return json({ error: 'Erro interno do servidor' }, { status: 500 });
 	}
-}
+};

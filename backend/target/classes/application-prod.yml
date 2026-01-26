@@ -1,0 +1,35 @@
+spring:
+  config:
+      activate:
+        on-profile: prod
+  app:
+    security:
+        cors:
+          allowed-origins: https://seudominio.com,https://www.seudominio.com
+        
+        cookie:
+          secure: true  #PROD: true (HTTPS obrigatório)
+
+  jpa:
+    hibernate:
+      ddl-auto: validate           # NUNCA use 'update' em produção!
+      show-sql: false                # Desabilita logs SQL em produção
+      properties:
+          hibernate:
+              format_sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: false     # Já deve ter baseline em prod
+
+  logging:
+    level:
+      com.finesse: INFO
+      org.springframework.web.cors: WARN
+      org.springframework.security: WARN
+      org.hibernate.SQL: WARN
+      org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    file:
+      name: /var/log/finesse/finesse-backend.log
+      max-size: 50MB
+      max-history: 90

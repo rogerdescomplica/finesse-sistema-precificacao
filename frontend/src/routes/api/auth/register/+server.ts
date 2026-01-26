@@ -1,7 +1,7 @@
 // src/routes/api/auth/register/+server.ts
 
 import type { RequestHandler } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { BACKEND_URL } from '$env/static/private';	
 import { json } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -25,8 +25,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Chama o backend Spring Boot
-		const backendUrl = env.BACKEND_URL;
-		const response = await fetch(`${backendUrl}/api/auth/register`, {
+		const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(data)

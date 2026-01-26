@@ -50,7 +50,6 @@ public class MaterialService {
             existing.setUnidadeMedida(input.getUnidadeMedida());
             existing.setVolumeEmbalagem(input.getVolumeEmbalagem());
             existing.setPrecoEmbalagem(input.getPrecoEmbalagem());
-            existing.setCustoUnitario(input.getCustoUnitario());
             existing.setObservacoes(trim(input.getObservacoes()));
             existing.setAtivo(input.getAtivo() == null ? existing.getAtivo() : input.getAtivo());
             sanitize(existing);
@@ -89,20 +88,12 @@ public class MaterialService {
             m.setVolumeEmbalagem(m.getVolumeEmbalagem().abs().setScale(2, java.math.RoundingMode.HALF_UP));
         if (m.getPrecoEmbalagem() != null)
             m.setPrecoEmbalagem(m.getPrecoEmbalagem().abs().setScale(2, java.math.RoundingMode.HALF_UP));
-        if (m.getCustoUnitario() != null)
-            m.setCustoUnitario(m.getCustoUnitario().setScale(6, java.math.RoundingMode.HALF_UP));
         if (m.getAtivo() == null) m.setAtivo(Boolean.TRUE);
     }
 
     private void validateBusiness(Material m) {
-        // Regra de negócio: custo unitário deve ser preco/volume quando ambos presentes
-        if (m.getPrecoEmbalagem() != null && m.getVolumeEmbalagem() != null &&
-            m.getVolumeEmbalagem().compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal calc = m.getPrecoEmbalagem().divide(m.getVolumeEmbalagem(), 6, java.math.RoundingMode.HALF_UP);
-            m.setCustoUnitario(calc);
-        }
+        // custo_unitario é gerado pelo banco (generated stored column), não calcular nem persistir aqui
     }
 
     private String trim(String s) { return s == null ? null : s.trim(); }
 }
-

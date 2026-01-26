@@ -10,13 +10,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.finesse.security.CustomUserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,9 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.finesse.dto.auth.LoginRequestRecord;
 import com.finesse.entity.Usuario;
+import com.finesse.security.CustomUserDetailsService;
 import com.finesse.security.JwtTokenProvider;
 import com.finesse.utils.CookieUtils;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -94,62 +96,82 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse httpResponse) {
         SecurityContextHolder.clearContext();
-        ResponseCookie accessDel = ResponseCookie.from("access_token", "")
-                .httpOnly(true).secure(true).sameSite("Lax").path("/").maxAge(0).build();
-        ResponseCookie refreshDel = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true).secure(true).sameSite("Lax").path("/").maxAge(0).build();
-        httpResponse.addHeader("Set-Cookie", accessDel.toString());
-        httpResponse.addHeader("Set-Cookie", refreshDel.toString());
+        
+        ResponseCookie accessDel = this.cookieUtils.deleteAccessTokenCookie();
+        ResponseCookie refreshDel = this.cookieUtils.deleteRefreshTokenCookie();
+        
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, accessDel.toString());
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, refreshDel.toString());
+    
         return ResponseEntity.ok(Map.of("message", "Logout realizado com sucesso"));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {    
+    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = this.cookieUtils.extractTokenFromCookie(request, "refresh_token");
 
         if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Refresh token não encontrado"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Refresh token não encontrado"));
         }
 
         try {
+            //valida primeiro
+            if (!this.jwtTokenProvider.validateToken(refreshToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Refresh token inválido ou expirado"));
+            }
+
+            //depois extrai userId
             Long userId = this.jwtTokenProvider.getUserIdFromToken(refreshToken);
             Usuario userDetails = (Usuario) this.userDetailsService.loadUserById(userId);
-            
-            if (this.jwtTokenProvider.validateToken(refreshToken)) {
-                String newAccessToken = this.jwtTokenProvider.generateToken(
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())
-                );
 
-                ResponseCookie accessCookie = this.cookieUtils.createAccessTokenCookie(newAccessToken);
-                response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
-                    
-                return ResponseEntity.ok(Map.of("message", "Token renovado com sucesso"));
-            }
+            String newAccessToken = this.jwtTokenProvider.generateToken(
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())
+            );
+
+            ResponseCookie accessCookie = this.cookieUtils.createAccessTokenCookie(newAccessToken);
+            response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+
+            return ResponseEntity.ok(Map.of("message", "Token renovado com sucesso"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body("Refresh token inválido");
+                    .body(Map.of("error", "Refresh token inválido"));
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body("Falha ao renovar token");
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> me() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Usuário não autenticado"));
+
+    @GetMapping("/check")
+    public ResponseEntity<?> checkSession() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Verifica se está autenticado
+        if (authentication == null 
+                || !authentication.isAuthenticated() 
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("authenticated", false));
         }
-        Object principal = authentication.getPrincipal();
-        if (!(principal instanceof Usuario)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Usuário não autenticado"));
+
+        // Verifica se o principal é um Usuario
+        if (!(authentication.getPrincipal() instanceof Usuario user)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("authenticated", false));
         }
-        Usuario user = (Usuario) principal;
-        List<String> roles = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
+        // Extrai roles
+        List<String> roles = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         return ResponseEntity.ok(Map.of(
-                "id", user.getId(),
-                "nome", user.getNome(),
-                "email", user.getEmail(),
-                "roles", roles
+                "authenticated", true,
+                "usuario", Map.of(
+                        "id", user.getId(),
+                        "nome", user.getNome(),
+                        "email", user.getEmail(),
+                        "roles", roles
+                )
         ));
     }
 }

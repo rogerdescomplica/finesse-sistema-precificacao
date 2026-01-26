@@ -1,12 +1,12 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { BACKEND_URL } from '$env/static/private';
 
 export const GET: RequestHandler = async () => {
 	try {
-		const backendUrl = env.BACKEND_URL;
-		console.log('Testando conexão com:', backendUrl);
+		
+		console.log('Testando conexão com:', BACKEND_URL);
 
-		const response = await fetch(`${backendUrl}/api/auth/login`, {
+		const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ email: 'admin@sistema.com', senha: '123456' })

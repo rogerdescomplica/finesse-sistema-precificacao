@@ -41,7 +41,7 @@ class MaterialControllerTest {
         Material m = new Material();
         m.setId(1L);
         m.setProduto("Álcool");
-        m.setUnidadeMedida(UnidadeMedida.LITRO);
+        m.setUnidadeMedida(UnidadeMedida.L);
         m.setVolumeEmbalagem(new BigDecimal("1.00"));
         m.setPrecoEmbalagem(new BigDecimal("10.00"));
         m.setCustoUnitario(new BigDecimal("10.000000"));

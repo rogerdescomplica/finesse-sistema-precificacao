@@ -1,13 +1,13 @@
 // src/routes/api/auth/login/+server.ts
 
-import { env } from '$env/dynamic/private';
+import { BACKEND_URL } from '$env/static/private';
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 
 // ESTE É O PROXY!
 // Este é o endpoint que o frontend chama para fazer login
 // Ele chama o backend Spring Boot e retorna o token de acesso
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
 		// Pega os dados do formulário
 		const data = await request.json();
@@ -23,9 +23,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'Email inválido' }, { status: 400 });
 		}
 
-		// Chama o backend Spring Boot
-		const backendUrl = env.BACKEND_URL || 'http://localhost:8080';
-		const response = await fetch(`${backendUrl}/api/auth/login`, {
+		// Chama o backend
+		const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ email, senha })
@@ -54,9 +53,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const cookies = response.headers.getSetCookie();
 
 		// Cria headers com múltiplos Set-Cookie
-		const headers = new Headers({
-			'Content-Type': 'application/json'
-		});
+		const headers = new Headers({ 'Content-Type': 'application/json' });
 
 		// Adiciona cada cookie individualmente
 		cookies.forEach((cookie) => {
