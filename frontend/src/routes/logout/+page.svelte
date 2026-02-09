@@ -16,6 +16,10 @@
       error = e instanceof Error ? e.message : 'Falha ao encerrar sessão';
     } finally {
       clearUser();
+      // força limpeza de qualquer cookie residual com path /api
+      try {
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      } catch {}
       goto('/login', { replaceState: true });
     }
   }
@@ -34,4 +38,3 @@
     <p class="mt-4 text-sm text-gray-600">Ative JavaScript para concluir o logout.</p>
   </noscript>
 </div>
-

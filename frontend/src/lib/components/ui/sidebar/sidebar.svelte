@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from '$app/state';
-    import { LayoutDashboard, LogOut, Package, Wrench, Settings } from '@lucide/svelte';
+    import { LayoutDashboard, LogOut, Package, Wrench, Settings, ClipboardList, ChartBar } from '@lucide/svelte';
     import MobileHeader from './mobile-header.svelte';
     import MobileSidebar from './mobile-sidebar.svelte';
     import NavItem from './nav-item.svelte';
@@ -60,6 +60,18 @@
                     Materiais
                 </NavItem>
             </li>
+            <li role="presentation" class="mt-6 mb-2 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                Análise
+            </li>
+            <li>
+                <NavItem
+                    href="/precificacao"
+                    icon={ChartBar}
+                    current={page.url.pathname.startsWith('/precificacao')}
+                >
+                    Precificação
+                </NavItem>
+            </li>
 
            <li	role="presentation"	class="mt-6 mb-2 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                 Configurações
@@ -71,6 +83,15 @@
                     current={page.url.pathname.startsWith('/configuracoes/geral')}
                 >
                     Geral
+                </NavItem>
+            </li>
+            <li>
+                <NavItem
+                    href="/atividades"
+                    icon={ClipboardList}
+                    current={page.url.pathname.startsWith('/atividades')}
+                >
+                    Atividades(CNAE)
                 </NavItem>
             </li>
           

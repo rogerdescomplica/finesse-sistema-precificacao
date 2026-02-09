@@ -1,135 +1,192 @@
-import type { Material, MaterialInput } from '$lib/services/material.service'
-import { materialService } from '$lib/services/material.service'
-import { SvelteURLSearchParams } from 'svelte/reactivity'
+import type { Material, MaterialInput } from '$lib/services/material.service';
+import { materialService } from '$lib/services/material.service';
+import { SvelteURLSearchParams } from 'svelte/reactivity';
+import { handleAuthFailure } from '$lib/security/sessionGuard.svelte.ts';
 
-type SortBy = keyof Material
-type StatusFilter = '' | 'ativo' | 'inativo'
+export type SortBy =
+	| 'id'
+	| 'produto'
+	| 'unidadeMedida'
+	| 'volumeEmbalagem'
+	| 'precoEmbalagem'
+	| 'custoUnitario'
+	| 'ativo';
+
+type StatusFilter = '' | 'ativo' | 'inativo';
 
 export class MaterialState {
-  items = $state<Material[]>([])
-  loading = $state(false)
-  error = $state<string>('')
+	items = $state<Material[]>([]);
+	error = $state<string>('');
 
-  search = $state('')
-  searchStatus = $state<StatusFilter>('')
+	// Estados de loading separados
+	loadingList = $state(false);
+	mutating = $state(false);
 
-  page = $state(1) // 1-based
-  perPage = $state(10)
-  totalPages = $state(1)
-  totalItems = $state(0)
+	search = $state('');
+	searchStatus = $state<StatusFilter>('');
 
-  sortBy = $state<SortBy>('id')
-  sortAsc = $state(true)
+	page = $state(1); // 1-based
+	perPage = $state(10);
+	totalPages = $state(1);
+	totalItems = $state(0);
 
-  private currentLoadController: AbortController | null = null
+	sortBy = $state<SortBy>('id');
+	sortAsc = $state(true);
 
-  resetPage() { this.page = 1; }
+	private currentLoadController: AbortController | null = null;
+	private loadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  setSortBy(column: SortBy) { 
-	if (this.sortBy === column) { 
-		this.sortAsc = !this.sortAsc; 
-	} else {
-		 this.sortBy = column; this.sortAsc = true; }
-   }
+	resetPage() {
+		this.page = 1;
+	}
+ 
+ 	setPage(page: number) {
+ 		const p = Math.max(1, page);
+ 		if (p === this.page) return;
+ 		this.page = p;
+ 		this.requestLoad(0);
+ 	}
 
-  private buildQueryParams() {
-    const params = new SvelteURLSearchParams()
-    params.set('page', String(Math.max(0, this.page - 1)))
-    params.set('size', String(this.perPage))
+	setSortBy(column: SortBy) {
+		// evita spam de requisições enquanto lista está carregando
+		if (this.loadingList) return;
 
-    // Se seu backend suporta direção, melhor mandar "sort=campo,asc|desc"
-    // Hoje seu proxy corta tudo depois da vírgula, então deixe só "campo" OU ajuste o proxy.
-    params.set('sort', String(this.sortBy))
+		if (this.sortBy === column) {
+			this.sortAsc = !this.sortAsc;
+		} else {
+			this.sortBy = column;
+			this.sortAsc = true;
+		}
 
-    const q = this.search.trim()
-    if (q) params.set('produto', q)
+		// ordenação mudou -> recarrega
+		this.requestLoad();
+	}
 
-    if (this.searchStatus === 'ativo') params.set('ativo', 'true')
-    if (this.searchStatus === 'inativo') params.set('ativo', 'false')
+	requestLoad(delayMs = 250) {
+		if (this.loadDebounceTimer !== null) {
+			clearTimeout(this.loadDebounceTimer);
+			this.loadDebounceTimer = null;
+		}
 
-    return params
-  }
+		this.loadDebounceTimer = setTimeout(() => {
+			this.loadDebounceTimer = null;
+			void this.load();
+		}, delayMs);
+	}
 
-  async load() {
-    this.currentLoadController?.abort()
-    const controller = new AbortController()
-    this.currentLoadController = controller
+	private buildQueryParams() {
+		const params = new SvelteURLSearchParams();
 
-    this.loading = true
-    this.error = ''
+		params.set('page', String(Math.max(0, this.page - 1)));
+		params.set('size', String(this.perPage));
 
-    try {
-      const params = this.buildQueryParams()
-      const page = await materialService.list(params, controller.signal)
+		// Spring / APIs comuns: sort=campo,asc|desc
+		params.set('sort', `${this.sortBy},${this.sortAsc ? 'asc' : 'desc'}`);
 
-      this.items = Array.isArray(page.content) ? page.content : []
-      this.totalPages = Number.isFinite(page.totalPages) && page.totalPages > 0 ? page.totalPages : 1
-      this.totalItems = Number.isFinite(page.totalElements) ? page.totalElements : 0
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return
-      this.error = err instanceof Error ? err.message : 'Erro inesperado'
-    } finally {
-      if (this.currentLoadController === controller) this.loading = false
-    }
-  }
+		const q = this.search.trim();
+		if (q) params.set('produto', q);
 
-  async create(data: MaterialInput) {
-    this.loading = true
-    this.error = ''
-    try {
-      await materialService.create(data)
-      await this.load()
-    } catch (err) {
-      this.error = err instanceof Error ? err.message : 'Erro inesperado'
-      throw err
-    } finally {
-      this.loading = false
-    }
-  }
+		if (this.searchStatus === 'ativo') params.set('ativo', 'true');
+		if (this.searchStatus === 'inativo') params.set('ativo', 'false');
 
-  async update(id: number, data: MaterialInput) {
-    this.loading = true
-    this.error = ''
-    try {
-      await materialService.update(id, data)
-      await this.load()
-    } catch (err) {
-      this.error = err instanceof Error ? err.message : 'Erro inesperado'
-      throw err
-    } finally {
-      this.loading = false
-    }
-  }
+		return params;
+	}
 
-  async toggleStatus(id: number, ativo: boolean) {
-    this.loading = true
-    this.error = ''
-    try {
-      await materialService.toggleStatus(id, ativo)
-      await this.load()
-    } catch (err) {
-      this.error = err instanceof Error ? err.message : 'Erro inesperado'
-      throw err
-    } finally {
-      this.loading = false
-    }
-  }
+	async load(opts?: { silent?: boolean }) {
+		this.currentLoadController?.abort();
+		const controller = new AbortController();
+		this.currentLoadController = controller;
 
-  async delete(id: number) {
-    this.loading = true
-    this.error = ''
-    try {
-      await materialService.remove(id)
+		if (!opts?.silent) this.loadingList = true;
+		if (!opts?.silent) this.error = '';
 
-      if (this.items.length === 1 && this.page > 1) this.page -= 1
-      await this.load()
-    } catch (err) {
-      this.error = err instanceof Error ? err.message : 'Erro inesperado'
-      throw err
-    } finally {
-      this.loading = false
-    }
-  }
+		try {
+			const params = this.buildQueryParams();
+			const page = await materialService.list(params, controller.signal);
+
+			this.items = Array.isArray(page.content) ? page.content : [];
+			this.totalPages =
+				Number.isFinite(page.totalPages) && page.totalPages > 0 ? page.totalPages : 1;
+			this.totalItems = Number.isFinite(page.totalElements) ? page.totalElements : 0;
+		} catch (err) {
+			// Se foi abort, só ignora (sem erro)
+			if (err instanceof DOMException && err.name === 'AbortError') {
+				return;
+			}
+
+			this.error = err instanceof Error ? err.message : 'Erro inesperado';
+			await handleAuthFailure(this.error);
+		} finally {
+			if (this.currentLoadController === controller && !opts?.silent) {
+				this.loadingList = false;
+			}
+		}
+	}
+
+	async create(data: MaterialInput) {
+		this.mutating = true;
+		this.error = '';
+
+		try {
+			await materialService.create(data);
+			await this.load({ silent: true });
+		} catch (err) {
+			this.error = err instanceof Error ? err.message : 'Erro inesperado';
+			await handleAuthFailure(this.error);
+			throw err;
+		} finally {
+			this.mutating = false;
+		}
+	}
+
+	async update(id: number, data: MaterialInput) {
+		this.mutating = true;
+		this.error = '';
+
+		try {
+			await materialService.update(id, data);
+			await this.load({ silent: true });
+		} catch (err) {
+			this.error = err instanceof Error ? err.message : 'Erro inesperado';
+			await handleAuthFailure(this.error);
+			throw err;
+		} finally {
+			this.mutating = false;
+		}
+	}
+
+	async toggleStatus(id: number, ativo: boolean) {
+		this.mutating = true;
+		this.error = '';
+
+		try {
+			await materialService.toggleStatus(id, ativo);
+			await this.load({ silent: true });
+		} catch (err) {
+			this.error = err instanceof Error ? err.message : 'Erro inesperado';
+			await handleAuthFailure(this.error);
+			throw err;
+		} finally {
+			this.mutating = false;
+		}
+	}
+
+	async delete(id: number) {
+		this.mutating = true;
+		this.error = '';
+
+		try {
+			await materialService.remove(id);
+
+			if (this.items.length === 1 && this.page > 1) this.page -= 1;
+			await this.load({ silent: true });
+		} catch (err) {
+			this.error = err instanceof Error ? err.message : 'Erro inesperado';
+			throw err;
+		} finally {
+			this.mutating = false;
+		}
+	}
 }
 
-export const materialState = new MaterialState()
+export const materialState = new MaterialState();

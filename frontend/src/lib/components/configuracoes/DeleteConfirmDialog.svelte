@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-	import type { Configuracao } from '$lib/services/config.service';
+	import type { Configuracao } from '$lib/services/configuracoes.service';
 
 	interface Props {
 		config: Configuracao | null;

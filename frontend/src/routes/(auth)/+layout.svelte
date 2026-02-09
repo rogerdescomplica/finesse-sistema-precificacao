@@ -29,8 +29,8 @@
 		return 'dashboard';
 	});
 
-	const userName = $derived(auth.user?.nome ?? 'Administrador');
-	const userEmail = $derived(auth.user?.email ?? 'finesse@admin.com');
+	const userName = $derived(auth.user?.nome ?? '--');
+	const userEmail = $derived(auth.user?.email ?? '--');
 	const userInitials = $derived.by(() => {
 		const nome = auth.user?.nome?.trim();
 		if (!nome) return 'AD';
@@ -40,8 +40,6 @@
 		}
 		return parts[0].slice(0, 2).toUpperCase();
 	});
-
-	// ==================== LIFECYCLE ====================
 
 	/**
 	 * Verifica autenticação APENAS UMA VEZ ao montar
@@ -66,8 +64,9 @@
 			}
     
 			if (!usuario) {
+				const returnTo = typeof location !== 'undefined' ? location.href : '/dashboard';
 				clearUser();
-				goto('/login', { replaceState: true });
+				goto(`/login?reason=expired&returnTo=${encodeURIComponent(returnTo)}`, { replaceState: true });
 				return;
 			}
 			
@@ -76,7 +75,8 @@
 		} catch (error) {
 			console.error('Erro ao verificar autenticação:', error);
 			clearUser();
-			goto('/login', { replaceState: true });
+			const returnTo = typeof location !== 'undefined' ? location.href : '/dashboard';
+			goto(`/login?reason=expired&returnTo=${encodeURIComponent(returnTo)}`, { replaceState: true });
 		} finally {
 			setLoading(false);
 		}

@@ -1,16 +1,18 @@
 <script lang="ts">
 	import type { Material } from '$lib/services/material.service';
+	import type { SortBy } from '$lib/states/material.state.svelte.ts';
 	import { PenLine, Trash2 } from '@lucide/svelte';
 	import { formatCurrency, formatNumber, getStatusClass, getStatusText } from '$lib/utils/formatters';
 
 	interface Props {
 		materials: Material[];
-		sortBy: keyof Material;
+		sortBy: SortBy;
 		sortAsc: boolean;
-		onSort: (column: keyof Material) => void;
+		onSort: (column: SortBy) => void;
 		onEdit: (material: Material) => void;
 		onToggleStatus: (material: Material) => void;
 		onDelete: (material: Material) => void;
+		loading?: boolean;
 	}
 
 	let { 
@@ -20,10 +22,11 @@
 		onSort, 
 		onEdit, 
 		onToggleStatus, 
-		onDelete 
+		onDelete,
+		loading = false
 	}: Props = $props();
 
-	const columns: { key: keyof Material; label: string; sortable: boolean }[] = [
+	const columns: { key: SortBy; label: string; sortable: boolean }[] = [
 		{ key: 'id', label: 'ID', sortable: true },
 		{ key: 'produto', label: 'Produto', sortable: true },
 		{ key: 'unidadeMedida', label: 'Unidade', sortable: true },
@@ -33,8 +36,8 @@
 		{ key: 'ativo', label: 'Status', sortable: true }
 	];
 
-	function handleSort(column: keyof Material) {
-		onSort(column);
+	function handleSort(column: SortBy) {
+		if (!loading) onSort(column);
 	}
 	const unitDescriptions: Record<Material['unidadeMedida'], string> = {
 		UN: 'Unidade',
@@ -56,7 +59,7 @@
 				{#each columns as col}
 					<th
 						class="whitespace-nowrap px-4 py-2 text-left text-sm font-semibold text-gray-700"
-						class:cursor-pointer={col.sortable}
+						class:cursor-pointer={col.sortable && !loading}
 						onclick={() => col.sortable && handleSort(col.key)}
 						role={col.sortable ? 'button' : undefined}
 						tabindex={col.sortable ? 0 : undefined}
@@ -111,7 +114,7 @@
 						</td>
 						
 						<td class="px-4 py-2 text-sm text-gray-700">
-							{formatNumber(material.custoUnitario, 6)}
+							{formatNumber(material.custoUnitario, 2)}
 						</td>
 						
 						<td class="px-4 py-2 text-sm {getStatusClass(material.ativo)}">
@@ -122,7 +125,7 @@
 							<div class="flex items-center justify-end gap-2">
 								
 								<button
-									class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
 									class:border-green-300={!material.ativo}
 									class:text-green-700={!material.ativo}
 									class:border-gray-300={material.ativo}
@@ -133,7 +136,7 @@
 								</button>
 
 								<button
-									class="inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
 									onclick={() => onEdit(material)}
 									title="Editar"
 								>
@@ -141,7 +144,7 @@
 								</button>
 												
 								<button
-									class="inline-flex h-9 items-center justify-center rounded-md border border-red-300 px-3 text-sm text-red-700 hover:bg-red-50 transition-colors"
+									class="cursor-pointerinline-flex h-9 items-center justify-center rounded-md border border-red-300 px-3 text-sm text-red-700 hover:bg-red-50 transition-colors"
 									onclick={() => onDelete(material)}
 									title="Excluir"
 								>

@@ -25,16 +25,16 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		}
 
 		// Remove os cookies independente do resultado do backend
-		cookies.delete('access_token', { path: '/' });
-		cookies.delete('refresh_token', { path: '/' });
+		cookies.delete('access_token', { path: '/api' });
+		cookies.delete('refresh_token', { path: '/api' });
 
 		return json({ success: true }, { status: 200 });
 	} catch (error) {
 		console.error('Erro no proxy de logout:', error);
 
 		// Mesmo com erro, remove os cookies
-		cookies.delete('access_token', { path: '/' });
-		cookies.delete('refresh_token', { path: '/' });
+		cookies.delete('access_token', { path: '/api' });
+		cookies.delete('refresh_token', { path: '/api' });
 
 		return json({ error: 'Erro ao fazer logout' }, { status: 500 });
 	}

@@ -29,7 +29,6 @@ import com.finesse.security.CustomUserDetailsService;
 import com.finesse.security.JwtTokenProvider;
 import com.finesse.utils.CookieUtils;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

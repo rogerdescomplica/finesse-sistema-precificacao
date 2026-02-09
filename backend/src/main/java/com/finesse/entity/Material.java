@@ -1,5 +1,6 @@
 package com.finesse.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,8 +39,8 @@ public class Material {
     @Column(name = "preco_embalagem", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoEmbalagem;
 
-    @NotNull(message = "Custo unitário é obrigatório")
     @Column(name = "custo_unitario", nullable = false, precision = 10, scale = 6, insertable = false, updatable = false)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal custoUnitario;
 
     @Column(name = "observacoes", length = 500)

@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @Tag(name = "Configurações", description = "CRUD de Configurações Gerais")
-@RequestMapping({"/api/config", "/api/configuracoes"})
+@RequestMapping("/api/configuracoes")
 public class ConfiguracoesController {
 
     @Autowired

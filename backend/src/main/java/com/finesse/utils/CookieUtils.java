@@ -26,13 +26,16 @@ public class CookieUtils {
     
     @Value("${app.security.cookie.same-site:Lax}")
     private String sameSite;
+
+    private static final String API_PATH = "/api";
     
     public ResponseCookie createAccessTokenCookie(String token) {
       return ResponseCookie.from("access_token", token)
                     .httpOnly(httpOnly)
                     .secure(secure)
                     .sameSite(sameSite)
-                    .path("/")
+                    //.path("/")
+                    .path(API_PATH)
                     .maxAge(this.jwtTokenProvider.getJwtExpirationMs() / 1000).build();
 
     }
@@ -42,7 +45,8 @@ public class CookieUtils {
                     .httpOnly(httpOnly)
                     .secure(secure)
                     .sameSite(sameSite)
-                    .path("/api/auth/refresh")
+                    //.path("/api/auth/refresh")
+                    .path(API_PATH)
                     .maxAge(this.jwtTokenProvider.getRefreshExpirationMs() / 1000).build();
     }
     
@@ -51,16 +55,18 @@ public class CookieUtils {
                     .httpOnly(httpOnly)
                     .secure(secure)
                     .sameSite(sameSite)
-                    .path("/")
+                    //.path("/")
+                    .path(API_PATH)
                     .maxAge(0).build();
     }
     
     public ResponseCookie deleteRefreshTokenCookie() {
-        return ResponseCookie.from("refresh_token", null)
+        return ResponseCookie.from("refresh_token", "")
                     .httpOnly(httpOnly)
                     .secure(secure)
                     .sameSite(sameSite)
-                    .path("/api/auth/refresh")
+                    //.path("/api/auth/refresh")
+                    .path(API_PATH)
                     .maxAge(0).build();
     }
     

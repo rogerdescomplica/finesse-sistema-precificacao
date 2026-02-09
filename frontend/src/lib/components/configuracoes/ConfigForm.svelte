@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { Save } from '@lucide/svelte';
 	import * as Sheet from '$lib/components/ui/sheet/index.ts';
-	import type { Configuracao } from '$lib/services/config.service';
+	import type { Configuracao } from '$lib/services/configuracoes.service';
 	import { FormValidation } from '$lib/components/configuracoes/validation/config.validation.svelte';
 
 	interface Props {
@@ -68,38 +69,53 @@
 		<div class="flex-1 space-y-6 overflow-y-auto px-6 py-6">
 			<div class="grid grid-cols-2 gap-4">
 				<div>
-					<label class="mb-1.5 block text-xs font-medium text-gray-500">Pretensão Mensal</label>
+					<label for="pretensao" class="mb-1.5 block text-xs font-medium text-gray-500">Pretensão Mensal</label>
 					<div class="relative">
 						<span class="absolute left-3 top-3 text-sm font-medium text-gray-400">R$</span>
-						<Input type="number" step="0.01" min="0" bind:value={form.pretensaoSalarialMensal} class="w-full rounded-lg border border-gray-200 py-2.5 pl-9 pr-3 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('pretensaoSalarialMensal')} onblur={() => form.displayError('pretensaoSalarialMensal')} />
+						<Input id="pretensao" type="number" step="0.01" min="0" bind:value={form.pretensaoSalarialMensal} class="w-full rounded-lg border border-gray-200 py-2.5 pl-9 pr-3 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('pretensaoSalarialMensal')} onblur={() => form.displayError('pretensaoSalarialMensal')} />
 					</div>
 					{#if form.shouldShowError('pretensaoSalarialMensal')}<p class="mt-1 text-xs text-red-600">{form.errors.pretensaoSalarialMensal}</p>{/if}
 				</div>
 				<div>
-					<label class="mb-1.5 block text-xs font-medium text-gray-500">Horas Semanais</label>
-					<Input type="number" step="0.01" min="0" bind:value={form.horasSemanais} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('horasSemanais')} onblur={() => form.displayError('horasSemanais')} />
+					<label for="horas" class="mb-1.5 block text-xs font-medium text-gray-500">Horas Semanais</label>
+					<Input id="horas" type="number" step="0.01" min="0" bind:value={form.horasSemanais} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('horasSemanais')} onblur={() => form.displayError('horasSemanais')} />
 					{#if form.shouldShowError('horasSemanais')}<p class="mt-1 text-xs text-red-600">{form.errors.horasSemanais}</p>{/if}
 				</div>
 				<div>
-					<label class="mb-1.5 block text-xs font-medium text-gray-500">Semanas média/mês</label>
-					<Input type="number" step="0.0001" min="0" bind:value={form.semanasMediaMes} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('semanasMediaMes')} onblur={() => form.displayError('semanasMediaMes')} />
+					<label for="semanas" class="mb-1.5 block text-xs font-medium text-gray-500">Semanas média/mês</label>
+					<Input id="semanas" type="number" step="0.0001" min="0" bind:value={form.semanasMediaMes} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('semanasMediaMes')} onblur={() => form.displayError('semanasMediaMes')} />
 					{#if form.shouldShowError('semanasMediaMes')}<p class="mt-1 text-xs text-red-600">{form.errors.semanasMediaMes}</p>{/if}
 				</div>
 				<div>
-					<label class="mb-1.5 block text-xs font-medium text-gray-500">Custo Fixo (%)</label>
-					<Input type="number" step="0.0001" min="0" bind:value={form.custoFixoPct} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('custoFixoPct')} onblur={() => form.displayError('custoFixoPct')} />
+					<label for="custofixo" class="mb-1.5 block text-xs font-medium text-gray-500">Custo Fixo (%)</label>
+					<Input id="custofixo" type="number" step="0.0001" min="0" bind:value={form.custoFixoPct} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('custoFixoPct')} onblur={() => form.displayError('custoFixoPct')} />
 					{#if form.shouldShowError('custoFixoPct')}<p class="mt-1 text-xs text-red-600">{form.errors.custoFixoPct}</p>{/if}
 				</div>
 				<div>
-					<label class="mb-1.5 block text-xs font-medium text-gray-500">Margem Lucro (%)</label>
-					<Input type="number" step="0.0001" min="0" bind:value={form.margemLucroPadraoPct} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('margemLucroPadraoPct')} onblur={() => form.displayError('margemLucroPadraoPct')} />
+					<label for="margemlucro" class="mb-1.5 block text-xs font-medium text-gray-500">Margem Lucro (%)</label>
+					<Input id="margemlucro" type="number" step="0.0001" min="0" bind:value={form.margemLucroPadraoPct} class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium" oninput={() => form.scheduleErrorDisplay('margemLucroPadraoPct')} onblur={() => form.displayError('margemLucroPadraoPct')} />
 					{#if form.shouldShowError('margemLucroPadraoPct')}<p class="mt-1 text-xs text-red-600">{form.errors.margemLucroPadraoPct}</p>{/if}
 				</div>
 			</div>
 			<div class="border-t border-gray-100 pt-3">
 				<div class="flex items-center justify-end gap-2">
 					<Button variant="secondary" onclick={handleClose} disabled={loading}>Cancelar</Button>
-					<Button onclick={handleSubmit} disabled={loading}>{loading ? 'Salvando...' : 'Salvar'}</Button>
+
+					<Button onclick={handleSubmit} disabled={loading || !form.isValid} class="min-w-[100px]">
+					{#if loading}
+						<svg class="mr-3 size-5 animate-spin ..." viewBox="0 0 24 24">
+							<!-- ... -->
+						</svg>
+							Salvando...
+					
+					{:else}
+						<span class="flex items-center gap-2">
+							<Save size={16} />
+							Salvar
+						</span>
+					{/if}
+				</Button>
+
 				</div>
 			</div>
 		</div>

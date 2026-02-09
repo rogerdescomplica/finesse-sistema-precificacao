@@ -17,7 +17,6 @@
 			unidadeMedida: UnidadeMedida;
 			volumeEmbalagem: number;
 			precoEmbalagem: number;
-			custoUnitario: number;
 			observacoes: string;
 			ativo: boolean;
 		}) => Promise<void>;
@@ -64,7 +63,6 @@
 			unidadeMedida: form.unidade as UnidadeMedida,
 			volumeEmbalagem: Number(form.volume),
 			precoEmbalagem: Number(form.preco),
-			custoUnitario: form.custoUnitario,
 			observacoes: form.observacoes.trim(),
 			ativo: form.ativo
 		});
@@ -267,10 +265,11 @@
 					class="min-w-[100px]"
 				>
 					{#if loading}
-						<span class="flex items-center gap-2">
-							<span class="animate-spin">⏳</span>
+						<svg class="mr-3 size-5 animate-spin ..." viewBox="0 0 24 24">
+							<!-- ... -->
+						</svg>
 							Salvando...
-						</span>
+					
 					{:else}
 						<span class="flex items-center gap-2">
 							<Save size={16} />

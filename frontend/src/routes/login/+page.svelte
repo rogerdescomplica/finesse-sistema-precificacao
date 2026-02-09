@@ -1,6 +1,7 @@
 <!-- src/routes/login/+page.svelte -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -28,6 +29,7 @@
 	let mostrarSenha = $state(false);
 	let isLoading = $state(false);
 	let errorMessage = $state('');
+	let infoMessage = $state('');
 
 	// ==================== DERIVED ====================
 	
@@ -52,6 +54,13 @@
         } catch (error) {
             console.error('Erro ao verificar sessão:', error);
         }
+		
+		// Mensagem de reautenticação
+		const params = page.url.searchParams;
+		const reason = params.get('reason');
+		if (reason === 'expired') {
+			infoMessage = 'Sua sessão expirou. Faça login novamente para continuar.';
+		}
 	});
 
 	// ==================== HANDLERS ====================
@@ -68,8 +77,17 @@
 			const response = await authService.login({ email, senha });
 			setUser(response.usuario);
 			
-			
-			goto('/dashboard', { replaceState: true });
+			// retorno à URL original, se salva em sessionStorage ou query
+			const params = page.url.searchParams;
+			const qsReturn = params.get('returnTo');
+			const ssReturn = sessionStorage.getItem('returnTo');
+			const returnTo = qsReturn || ssReturn;
+			if (returnTo) {
+				sessionStorage.removeItem('returnTo');
+				goto(returnTo, { replaceState: true });
+			} else {
+				goto('/dashboard', { replaceState: true });
+			}
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login';
 		} finally {
@@ -113,6 +131,11 @@
 						aria-live="polite"
 					>
 						{errorMessage}
+					</div>
+				{/if}
+				{#if infoMessage}
+					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800" role="status" aria-live="polite">
+						{infoMessage}
 					</div>
 				{/if}
 

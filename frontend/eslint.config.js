@@ -33,8 +33,17 @@ export default defineConfig(
 					"destructuredArrayIgnorePattern": "^_"
 				}
 			]
-		}
+		},
+		overrides: [
+					{
+						files: ['*.svelte', '*.ts'],
+						rules: {
+							'svelte/no-navigation-without-resolve': 'off'
+						}
+					}
+				]
 	},
+	
 	{
 		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
