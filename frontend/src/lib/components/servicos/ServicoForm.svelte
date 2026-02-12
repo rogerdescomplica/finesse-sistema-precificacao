@@ -152,7 +152,7 @@
 
 	// Custos diretos
 	const custoMaoObra = $derived(() => {
-		const duracaoMin = Number(form.duracao || 0);
+		const duracaoMin = Number(form.duracaoMinutos || 0);
 		return duracaoMin * Number(valorMinuto() || 0);
 	});
 
@@ -170,6 +170,7 @@
 	// Frações (0..1) do PREÇO (igual planilha)
 	const custoFixoFrac = $derived(() => Number(configAtual?.custoFixoPct ?? 0) / 100);
 
+	//Por padrao é para usar a Margem Recomendada da Configuracao, no entanto, caso o usuario tenha informado uma margem customizada, é usada essa
 	const margemFrac = $derived(() => {
 		const custom = form.margemLucroCustomPct;
 		if (custom !== '' && custom !== undefined && custom !== null) return Number(custom) / 100;
@@ -214,7 +215,7 @@
 		await onSubmit({
 			nome: form.nome.trim(),
 			grupo: form.grupo.trim(),
-			duracaoMinutos: Number(form.duracao),
+			duracaoMinutos: Number(form.duracaoMinutos || 0),
 			atividadeId: Number(form.atividadeId),
 			margemLucroCustomPct: form.margemLucroCustomPct === '' ? undefined : Number(form.margemLucroCustomPct),
 			ativo: form.ativo,
@@ -231,7 +232,7 @@
 </script>
 
 <Sheet.Root bind:open>
-	<Sheet.Content side="right" hideDefaultClose class="flex flex-col gap-0 p-0 sm:max-w-4xl">
+	<Sheet.Content side="right" hideDefaultClose class="flex flex-col gap-0 p-0 sm:max-w-3xl">
 		<Sheet.Header
 			class="sticky top-0 z-10 flex-row items-center justify-between gap-0 border-b border-pink-100 bg-white px-6 py-5"
 		>
@@ -308,13 +309,13 @@
 								type="number"
 								min="1"
 								step="1"
-								bind:value={form.duracao}
+								bind:value={form.duracaoMinutos}
 								placeholder="60"
-								oninput={() => form.scheduleErrorDisplay('duracao')}
-								onblur={() => form.displayError('duracao')}
+								oninput={() => form.scheduleErrorDisplay('duracaoMinutos')}
+								onblur={() => form.displayError('duracaoMinutos')}
 							/>
-							{#if form.shouldShowError('duracao')}
-								<p class="mt-1 text-xs text-red-600">{form.errors.duracao}</p>
+							{#if form.shouldShowError('duracaoMinutos')}
+								<p class="mt-1 text-xs text-red-600">{form.errors.duracaoMinutos}</p>
 							{/if}
 						</div>
 
@@ -340,8 +341,8 @@
 							id="atividade"
 							class="h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm"
 							bind:value={form.atividadeId}
-							oninput={() => form.scheduleErrorDisplay('atividade')}
-							onblur={() => form.displayError('atividade')}
+							oninput={() => form.scheduleErrorDisplay('atividadeId')}
+							onblur={() => form.displayError('atividadeId')}
 						>
 							<option value="">Selecione...</option>
 							{#if atividadesLoading}
@@ -354,8 +355,8 @@
 								{/each}
 							{/if}
 						</select>
-						{#if form.shouldShowError('atividade')}
-							<p class="mt-1 text-xs text-red-600">{form.errors.atividade}</p>
+						{#if form.shouldShowError('atividadeId')}
+							<p class="mt-1 text-xs text-red-600">{form.errors.atividadeId}</p>
 						{/if}
 					</div>
 
@@ -400,6 +401,7 @@
 						custoDireto={custoDireto()}
 						custoFixoFrac={custoFixoFrac()}
 						markup={markup()}
+						recommendedMargin={margemFrac()}
 						bind:vendaPraticada={vendaPraticada}
 						bind:descontoValor={descontoValor}
 						bind:taxaAdicionalValor={taxaAdicionalValor}

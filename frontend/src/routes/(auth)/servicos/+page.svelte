@@ -61,15 +61,13 @@
 			bind:search={servicoState.search}
 			bind:searchStatus={servicoState.searchStatus}
 			bind:perPage={servicoState.perPage}
-		/>
-
-		<div class="mb-2 px-2">
-			<label class="mr-2 text-sm text-gray-600">Buscar em:</label>
+		>
+			<label class="ml-1 text-sm text-gray-600">Buscar em:</label>
 			<select class="h-9 rounded-xl border border-pink-200 bg-white px-3 text-sm" bind:value={servicoState.searchField}>
 				<option value="nome">Nome</option>
 				<option value="grupo">Categoria (Grupo)</option>
 			</select>
-		</div>
+		</ListFilterBar>
 
 		<hr class="divide-y divide-gray-100" />
 

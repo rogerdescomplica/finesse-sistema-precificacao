@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { MoneyInput } from '$lib/components/ui/money-input/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.ts';
 	import type { Material, UnidadeMedida } from '$lib/services/material.service';
 	import { CircleCheck, Package, Save, X } from '@lucide/svelte';
@@ -84,6 +85,7 @@
 			
 			<Sheet.Close
 				class="rounded-full p-2 text-gray-400 transition-colors hover:bg-pink-50 hover:text-pink-500 focus:outline-none focus:ring-pink-200"
+				onclick={handleClose}
 			>
 				<X class="h-5 w-5" aria-hidden="true" />
 			</Sheet.Close>
@@ -126,6 +128,14 @@
 						</label>
 						<div class="relative">
 							<span class="absolute left-3 top-3 text-sm font-medium text-gray-400">R$</span>
+							<MoneyInput
+								id="preco"
+								class="w-full rounded-lg border border-gray-200 py-2.5 pl-9 pr-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-300"
+								bind:value={form.preco}
+								oninput={() => form.scheduleErrorDisplay('preco')}
+								onblur={() => form.displayError('preco')}
+							/>
+							<!--  
 							<Input
 								id="preco"
 								type="number"
@@ -137,6 +147,7 @@
 								oninput={() => form.scheduleErrorDisplay('preco')}
 								onblur={() => form.displayError('preco')}
 							/>
+							 -->
 						</div>
 						{#if form.shouldShowError('preco')}
 							<p class="mt-1 text-xs text-red-600">{form.errors.preco}</p>

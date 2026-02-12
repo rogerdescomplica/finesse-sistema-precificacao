@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { MoneyInput } from '$lib/components/ui/money-input/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.ts';
 	import type { Atividade } from '$lib/services/atividade.service';
 	import { Save, X, CircleCheck } from '@lucide/svelte';
@@ -119,13 +120,9 @@
 					<label for="aliquota" class="mb-1.5 block text-sm font-semibold text-gray-700">
 						Alíquota Total (%)
 					</label>
-					<Input
+					<MoneyInput
 						id="aliquota"
-						type="number"
-						step="0.01"
-						min="0"
 						bind:value={form.aliquotaTotalPct}
-						placeholder="0,00"
 						oninput={() => form.scheduleErrorDisplay('aliquotaTotalPct')}
 						onblur={() => form.displayError('aliquotaTotalPct')}
 					/>
@@ -138,13 +135,9 @@
 					<label for="iss" class="mb-1.5 block text-sm font-semibold text-gray-700">
 						ISS (%)
 					</label>
-					<Input
+					<MoneyInput
 						id="iss"
-						type="number"
-						step="0.01"
-						min="0"
 						bind:value={form.issPct}
-						placeholder="0,00"
 						oninput={() => form.scheduleErrorDisplay('issPct')}
 						onblur={() => form.displayError('issPct')}
 					/>

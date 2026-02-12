@@ -1,75 +1,59 @@
-type FieldName = 'nome' | 'cnae' | 'aliquotaTotalPct' | 'issPct';
-type Errors = Record<FieldName, string>;
+import { FormValidationBase } from '$lib/utils/form-validation.base.svelte'
 
-export class FormValidation {
-	nome = $state('');
-	cnae = $state('');
-	aliquotaTotalPct = $state<number | ''>('');
-	issPct = $state<number | ''>('');
-	observacao = $state('');
-	ativo = $state(true);
+export interface AtividadeFormData {
+	nome: string
+	cnae: string
+	aliquotaTotalPct: number
+	issPct: number
+	observacao: string
+	ativo: boolean
+}
 
-	submitted = $state(false);
-	showErrors = $state<Record<FieldName, boolean>>({ nome: false, cnae: false, aliquotaTotalPct: false, issPct: false });
-	private timers: Partial<Record<FieldName, ReturnType<typeof setTimeout>>> = {};
-	private debounceMs = 400;
+type ValidatedField = Exclude<keyof AtividadeFormData, 'observacao' | 'ativo'>
 
-	private readonly fields: FieldName[] = ['nome', 'cnae', 'aliquotaTotalPct', 'issPct'];
+const validatedFields = ['nome', 'cnae', 'aliquotaTotalPct', 'issPct'] as const satisfies readonly ValidatedField[]
 
-	get errors(): Errors {
-		return {
-			nome: !this.nome.trim() ? 'Nome é obrigatório' : '',
-			cnae: !this.cnae.trim() ? 'CNAE é obrigatório' : '',
-			aliquotaTotalPct: this.aliquotaTotalPct === '' || Number(this.aliquotaTotalPct) < 0 ? 'Alíquota inválida' : '',
-			issPct: this.issPct === '' || Number(this.issPct) < 0 ? 'ISS inválido' : ''
-		};
+export class FormValidation extends FormValidationBase<AtividadeFormData, ValidatedField> {
+	nome = $state('')
+	cnae = $state('')
+	aliquotaTotalPct = $state<number>(0)
+	issPct = $state<number>(0)
+	observacao = $state('')
+	ativo = $state(true)
+
+	constructor() {
+		super(
+			validatedFields,
+			() => ({
+				nome: !this.nome.trim() ? 'Nome é obrigatório' : '',
+				cnae: !this.cnae.trim() ? 'CNAE é obrigatório' : '',
+				aliquotaTotalPct: this.aliquotaTotalPct < 0 ? 'Alíquota inválida' : '',
+				issPct: this.issPct < 0 ? 'ISS inválido' : ''
+			}),
+			400
+		)
 	}
 
-	get isValid() {
-		return Object.values(this.errors).every((e) => !e);
-	}
+	populate(data: AtividadeFormData) {
+		this.nome = data.nome
+		this.cnae = data.cnae
+		this.aliquotaTotalPct = data.aliquotaTotalPct
+		this.issPct = data.issPct
+		this.observacao = data.observacao
+		this.ativo = data.ativo
 
-	scheduleErrorDisplay(fieldName: FieldName) {
-		const t = this.timers[fieldName];
-		if (t) clearTimeout(t);
-		this.timers[fieldName] = setTimeout(() => {
-			this.showErrors[fieldName] = !!this.errors[fieldName];
-		}, this.debounceMs);
-	}
-
-	displayError(fieldName: FieldName) {
-		this.showErrors[fieldName] = !!this.errors[fieldName];
-	}
-
-	validateAll() {
-		this.submitted = true;
-		for (const field of this.fields) {
-			this.showErrors[field] = !!this.errors[field];
-		}
-		return this.isValid;
-	}
-
-	shouldShowError(fieldName: FieldName) {
-		return (this.submitted || this.showErrors[fieldName]) && this.errors[fieldName];
-	}
-
-	populate(data: { nome: string; cnae: string; aliquotaTotalPct: number; issPct: number; observacao: string; ativo: boolean }) {
-		this.nome = data.nome;
-		this.cnae = data.cnae;
-		this.aliquotaTotalPct = data.aliquotaTotalPct;
-		this.issPct = data.issPct;
-		this.observacao = data.observacao;
-		this.ativo = data.ativo;
+		// opcional: se quiser limpar erros ao carregar dados
+		// this.resetValidationState()
 	}
 
 	reset() {
-		this.nome = '';
-		this.cnae = '';
-		this.aliquotaTotalPct = '';
-		this.issPct = '';
-		this.observacao = '';
-		this.ativo = true;
-		this.submitted = false;
-		this.showErrors = { nome: false, cnae: false, aliquotaTotalPct: false, issPct: false };
+		this.nome = ''
+		this.cnae = ''
+		this.aliquotaTotalPct = 0
+		this.issPct = 0
+		this.observacao = ''
+		this.ativo = true
+
+		this.resetValidationState()
 	}
 }

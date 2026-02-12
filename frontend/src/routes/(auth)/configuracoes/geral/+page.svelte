@@ -59,7 +59,7 @@
 
 	<Button
 		class="inline-flex items-center gap-2"
-		onclick={() => { formOpen; sheetOpen = true; }}
+		onclick={() => { crud.openCreateForm(); sheetOpen = true; }}
 		disabled={!auth.isAuthenticated}
 	>
 		<Plus size={16} /> Nova Configuração

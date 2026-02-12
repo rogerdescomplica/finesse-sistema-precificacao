@@ -1,21 +1,39 @@
 <script lang="ts">
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { formatNumber } from '$lib/utils/formatters';
+	import type { HTMLAttributes } from 'svelte/elements';
 
-	type Props = {
+	type Native = HTMLAttributes<HTMLInputElement>;
+
+	type Props = Omit<
+		Native,
+		// controlados internamente para manter máscara e bind:value
+		'value' | 'type' | 'inputmode' | 'autocomplete' | 'oninput' | 'onblur' | 'onfocus'
+	> & {
 		value?: number;
 		disabled?: boolean;
-		class?: string;
 		placeholder?: string;
+
 		onEdit?: () => void;
+
+		// ✅ use os tipos nativos do Svelte (sem InputEvent)
+		oninput?: Native['oninput'];
+		onblur?: Native['onblur'];
+		onfocus?: Native['onfocus'];
 	};
 
 	let {
 		value = $bindable<number>(0),
-		disabled = false,
 		class: className = '',
+		disabled = false,
 		placeholder = '0,00',
-		onEdit
+
+		onEdit,
+		oninput,
+		onfocus,
+		onblur,
+
+		...rest
 	}: Props = $props();
 
 	function clamp2(n: number) {
@@ -23,10 +41,8 @@
 	}
 
 	function parseDigitsToMoney(raw: string): number {
-		// remove tudo que não é dígito
 		const digits = raw.replace(/\D/g, '');
 		if (!digits) return 0;
-
 		return clamp2(Number(digits) / 100);
 	}
 
@@ -36,27 +52,34 @@
 		value = parseDigitsToMoney(el.value);
 		onEdit?.();
 
-		// reescreve com máscara (milhar + vírgula)
+		// reescreve com máscara
 		el.value = formatNumber(value, 2);
+
+		// ✅ repassa (tipagem bate com Native['oninput'])
+		oninput?.(e as never);
 	}
 
-	function handleFocus(e: Event) {
+	function handleFocus(e: FocusEvent) {
 		const el = e.currentTarget as HTMLInputElement;
 		el.value = formatNumber(value, 2);
+
+		onfocus?.(e as never);
 	}
 
-	function handleBlur() {
+	function handleBlur(e: FocusEvent) {
 		value = clamp2(value);
+		onblur?.(e as never);
 	}
 </script>
 
 <Input
-	type="text"
-	inputmode="numeric"
-	autocomplete="off"
 	{disabled}
 	placeholder={placeholder}
 	class={className}
+	{...rest}
+	type="text"
+	inputmode="numeric"
+	autocomplete="off"
 	value={formatNumber(value, 2)}
 	oninput={handleInput}
 	onfocus={handleFocus}

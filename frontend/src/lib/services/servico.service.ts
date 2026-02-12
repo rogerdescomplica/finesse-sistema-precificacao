@@ -5,6 +5,7 @@ export interface Servico {
   duracaoMinutos: number
   margemLucroCustomPct?: number
   atividade?: { id: number; nome?: string }
+  precoVigente?: number | null
   ativo: boolean
 }
 

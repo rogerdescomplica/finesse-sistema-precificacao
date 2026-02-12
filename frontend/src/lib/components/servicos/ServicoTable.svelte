@@ -2,7 +2,7 @@
 	import type { Servico } from '$lib/services/servico.service';
 	import type { SortBy } from '$lib/states/servico.state.svelte.ts';
 	import { PenLine, Trash2 } from '@lucide/svelte';
-	import { getStatusClass, getStatusText } from '$lib/utils/formatters';
+	import { getStatusClass, getStatusText, formatCurrency } from '$lib/utils/formatters';
 
 	interface Props {
 		servicos: Servico[];
@@ -30,8 +30,7 @@
 		{ key: 'id', label: 'ID', sortable: true },
 		{ key: 'nome', label: 'Nome', sortable: true },
 		{ key: 'grupo', label: 'Categoria', sortable: true },
-		{ key: 'duracaoMinutos', label: 'Duração (min)', sortable: true },
-		{ key: 'ativo', label: 'Status', sortable: true }
+		{ key: 'duracaoMinutos', label: 'Duração (min)', sortable: true }
 	];
 
 	function handleSort(column: SortBy) {
@@ -59,6 +58,22 @@
 						</span>
 					</th>
 				{/each}
+				<th class="whitespace-nowrap px-4 py-2 text-right text-sm font-semibold text-gray-700">
+					Valor
+				</th>
+				<th
+					class="whitespace-nowrap px-4 py-2 text-left text-sm font-semibold text-gray-700 cursor-pointer"
+					onclick={() => handleSort('ativo')}
+					role="button"
+					tabindex={0}
+				>
+					<span class="flex items-center gap-1">
+						Status
+						{#if sortBy === 'ativo'}
+							<span class="text-xs">{sortAsc ? '▲' : '▼'}</span>
+						{/if}
+					</span>
+				</th>
 				<th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">
 					Ações
 				</th>
@@ -68,7 +83,7 @@
 		<tbody class="divide-y divide-gray-100 bg-white">
 			{#if servicos.length === 0}
 				<tr>
-					<td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
+					<td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500">
 						Nenhum serviço encontrado
 					</td>
 				</tr>
@@ -79,6 +94,13 @@
 						<td class="px-4 py-2 text-sm font-medium text-gray-900">{servico.nome}</td>
 						<td class="px-4 py-2 text-sm text-gray-700">{servico.grupo}</td>
 						<td class="px-4 py-2 text-sm text-gray-700">{servico.duracaoMinutos}</td>
+						<td class="px-4 py-2 text-sm text-gray-700 text-right font-medium">
+							{#if servico.precoVigente != null}
+								{formatCurrency(Number(servico.precoVigente || 0))}
+							{:else}
+								—
+							{/if}
+						</td>
 						<td class="px-4 py-2 text-sm {getStatusClass(servico.ativo)}">{getStatusText(servico.ativo)}</td>
 						<td class="px-4 py-2 text-right">
 							<div class="flex items-center justify-end gap-2">

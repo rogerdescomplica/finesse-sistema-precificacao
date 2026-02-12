@@ -38,6 +38,8 @@
 			<Input placeholder={placeholder} bind:value={search} class={inputClass} />
 		</div>
 
+		<slot />
+
 		<div class="flex items-center gap-3">
 			{#if showStatusTabs}
 				<div class="flex items-center gap-1 rounded-xl bg-gray-50 ring-1 ring-pink-100 p-1">
@@ -68,6 +70,8 @@
 					{/each}
 				</select>
 			{/if}
+
+			
 		</div>
 	</div>
 </div>

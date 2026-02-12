@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input/index.js';
 	import { MoneyInput } from '$lib/components/ui/money-input/index.js';
 	import { formatCurrency, formatNumber } from '$lib/utils/formatters';
 	import { CircleAlert, CircleDollarSign } from '@lucide/svelte';
@@ -31,7 +30,7 @@
 		vendaPraticada = $bindable<number>(0),
 		descontoValor = $bindable<number>(0),
 		taxaAdicionalValor = $bindable<number>(0),
-		recommendedMargin = 0.15,
+		recommendedMargin,
 		onEditedPrice,
 		onApplySuggestion
 	}: Props = $props();
@@ -49,6 +48,7 @@
 	const insumosN = $derived(n(custoInsumos));
 	const diretoN = $derived(n(custoDireto));
 	const markupN = $derived(n(markup)); // multiplicador (ex.: 1.90)
+	const recommendedMargiN = $derived(n(recommendedMargin)); 
 
 	// Venda ajustada (planilha)
 	const vendaBruta = $derived(n(vendaPraticada));
@@ -66,7 +66,7 @@
 	const lucroLiquidoPct = $derived( vendaAjustada > 0 ? (lucroLiquido / vendaAjustada) * 100 : 0 );
 
 	const lucroNegativo = $derived(lucroLiquido < 0);
-	const margemBaixa = $derived(lucroLiquidoPct < recommendedMargin * 100);
+	const margemBaixa = $derived(lucroLiquidoPct < recommendedMargiN * 100);
 
 
 	function handleEditPrice() {
@@ -80,7 +80,7 @@
 
 <div class="md:sticky md:top-2 md:self-start">
 	<div
-		class="rounded-[28px] bg-gradient-to-b from-slate-900 to-slate-800 p-6 text-white shadow-2xl space-y-6 ring-1 ring-slate-800"
+		class="rounded-[28px] bg-linear-to-b from-slate-900 to-slate-800 p-6 text-white shadow-2xl space-y-6 ring-1 ring-slate-800"
 	>
 		<!-- Header -->
 		<div>
@@ -205,7 +205,7 @@
 					<div class="text-xs text-slate-600">
 						{#if margemBaixa}
 							Cuidado! Sua margem está abaixo do recomendado ({formatNumber(
-								recommendedMargin * 100,
+								recommendedMargiN * 100,
 								0
 							)}%). Considere reduzir custos ou reajustar o valor de venda.
 						{:else}
