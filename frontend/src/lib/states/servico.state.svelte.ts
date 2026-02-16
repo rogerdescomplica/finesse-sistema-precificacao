@@ -74,13 +74,13 @@ export class ServicoState {
 		if (!opts?.silent) this.error = '';
 		try {
 			const params = this.buildQueryParams();
-      const page = await servicoService.list(params, controller.signal);
-      const baseItems = Array.isArray(page.content) ? page.content : [];
-      const precos = await precoPraticadoService.listarPrecosAtuais();
-      const precoMap = new Map<number, number | null>(precos.map(p => [p.servicoId, p.precoAtual]));
-      const itemsWithPrice = baseItems.map(s => ({ ...s, precoVigente: precoMap.get(s.id) ?? null }));
-      if (this.currentLoadController !== controller) return;
-      this.items = itemsWithPrice;
+			const page = await servicoService.list(params, controller.signal);
+			const baseItems = Array.isArray(page.content) ? page.content : [];
+			const precos = await precoPraticadoService.listarPrecosAtuais();
+			const precoMap = new Map<number, number | null>(precos.map(p => [p.servicoId, p.precoAtual]));
+			const itemsWithPrice = baseItems.map(s => ({ ...s, precoVigente: precoMap.get(s.id) ?? null }));
+			if (this.currentLoadController !== controller) return;
+			this.items = itemsWithPrice;
 			this.totalPages = Number.isFinite(page.totalPages) && page.totalPages > 0 ? page.totalPages : 1;
 			this.totalItems = Number.isFinite(page.totalElements) ? page.totalElements : 0;
 		} catch (err) {

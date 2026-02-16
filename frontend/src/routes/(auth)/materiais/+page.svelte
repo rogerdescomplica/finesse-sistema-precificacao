@@ -16,7 +16,6 @@
 	import type { MaterialInput } from '$lib/services/material.service';
 
 	const crud = useCrudPage<Material, MaterialInput, SortBy>(materialState, { isAuthenticated: () => auth.isAuthenticated && auth.checked });
-	const formOpen = $derived(crud.formOpen);
 	const editingMaterial = $derived(crud.editingItem);
 	const confirmDeleteMaterial = $derived(crud.confirmDeleteItem);
 	// variável local mutável para binding do Sheet

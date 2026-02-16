@@ -1,6 +1,7 @@
 package com.finesse.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.finesse.entity.Perfil;
 import com.finesse.entity.Usuario;
+import com.finesse.dto.AtualizarUsuarioRequestRecord;
 import com.finesse.exception.NotFoundException;
 import com.finesse.exception.ServiceOperationException;
 import com.finesse.exception.ValidationException;
@@ -27,6 +29,45 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    // construtor para unit tests
+    public UsuarioServiceImpl(UsuarioRepository repo, PasswordEncoder passwordEncoder) {
+        this.repo = repo;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    @Transactional
+    public Usuario atualizarUsuario(Long id, AtualizarUsuarioRequestRecord request) {
+        try {
+            Usuario u = buscarPorId(id);
+            if (request.nome() != null && !request.nome().trim().isEmpty()) {
+                u.setNome(request.nome().trim());
+            }
+            if (request.email() != null && !request.email().trim().isEmpty()) {
+                String novoEmail = request.email().trim().toLowerCase();
+                if (!novoEmail.equals(u.getEmail())) {
+                    throw new ValidationException("Alteração de email não suportada neste endpoint");
+                }
+            }
+            if (request.perfil() != null) {
+                try {
+                    u.setPerfil(Perfil.valueOf(request.perfil().toUpperCase()));
+                } catch (IllegalArgumentException ex) {
+                    throw new ValidationException("Perfil inválido: " + request.perfil());
+                    }
+                }
+                if (u.getPerfil() == null) {
+                    throw new ValidationException("Usuário deve possuir ao menos um perfil");
+                }
+            
+            return repo.save(u);
+        } catch (Exception ex) {
+            if (ex instanceof ValidationException vex) throw vex;
+            log.error("Falha ao atualizar usuário id={}", id, ex);
+            throw new ServiceOperationException("Falha ao atualizar usuário", ex);
+        }
+    }
 
     @Override
     public List<Usuario> listarTodos() {
@@ -78,8 +119,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             if (emailExiste(email)) {
                 throw new ValidationException("Email já cadastrado");
             }
-            if (senha == null || senha.trim().length() < 6) {
-                throw new ValidationException("Senha deve possuir no mínimo 6 caracteres");
+            if (!senhaForte(senha)) {
+                throw new ValidationException("Senha fraca: mínimo 8 caracteres com maiúscula, minúscula, número e especial");
             }
             Usuario u = new Usuario();
             u.setNome(nome == null ? null : nome.trim());
@@ -100,8 +141,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Transactional
     public void alterarSenha(Long id, String novaSenha) {
         try {
-            if (novaSenha == null || novaSenha.trim().length() < 6) {
-                throw new ValidationException("Senha deve possuir no mínimo 6 caracteres");
+            if (!senhaForte(novaSenha)) {
+                throw new ValidationException("Senha fraca: mínimo 8 caracteres com maiúscula, minúscula, número e especial");
             }
             Usuario u = buscarPorId(id);
             u.setSenha(passwordEncoder.encode(novaSenha));
@@ -113,85 +154,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         } catch (Exception ex) {
             log.error("Falha ao alterar senha para usuário id={}", id, ex);
             throw new ServiceOperationException("Falha ao alterar senha", ex);
-        }
-    }
-
-    @Override
-    @Transactional
-    public Usuario ativarUsuario(Long id) {
-        try {
-            Usuario u = buscarPorId(id);
-            if (Boolean.TRUE.equals(u.getAtivo())) {
-                throw new ValidationException("Usuário já está ativo");
-            }
-            u.setAtivo(Boolean.TRUE);
-            Usuario saved = repo.save(u);
-            log.info("Usuário ativado id={}", id);
-            return saved;
-        } catch (Exception ex) {
-            log.error("Falha ao ativar usuário id={}", id, ex);
-            if (ex instanceof ValidationException vex) throw vex;
-            throw new ServiceOperationException("Falha ao ativar usuário", ex);
-        }
-    }
-
-    @Override
-    @Transactional
-    public Usuario desativarUsuario(Long id) {
-        try {
-            Usuario u = buscarPorId(id);
-            if (Boolean.FALSE.equals(u.getAtivo())) {
-                throw new ValidationException("Usuário já está inativo");
-            }
-            u.setAtivo(Boolean.FALSE);
-            Usuario saved = repo.save(u);
-            log.info("Usuário desativado id={}", id);
-            return saved;
-        } catch (Exception ex) {
-            log.error("Falha ao desativar usuário id={}", id, ex);
-            if (ex instanceof ValidationException vex) throw vex;
-            throw new ServiceOperationException("Falha ao desativar usuário", ex);
-        }
-    }
-
-    @Override
-    @Transactional
-    public Usuario adicionarPerfil(Long id, Perfil perfil) {
-        try {
-            Usuario u = buscarPorId(id);
-            if (u.temPerfil(perfil)) {
-                throw new ValidationException("Usuário já possui o perfil");
-            }
-            u.adicionarPerfil(perfil);
-            Usuario saved = repo.save(u);
-            log.info("Perfil {} adicionado para usuário id={}", perfil, id);
-            return saved;
-        } catch (Exception ex) {
-            log.error("Falha ao adicionar perfil para usuário id={}", id, ex);
-            if (ex instanceof ValidationException vex) throw vex;
-            throw new ServiceOperationException("Falha ao adicionar perfil", ex);
-        }
-    }
-
-    @Override
-    @Transactional
-    public Usuario removerPerfil(Long id, Perfil perfil) {
-        try {
-            Usuario u = buscarPorId(id);
-            if (!u.temPerfil(perfil)) {
-                throw new ValidationException("Usuário não possui o perfil informado");
-            }
-            if (u.getPerfis().size() == 1) {
-                throw new ValidationException("Usuário deve possuir ao menos um perfil");
-            }
-            u.removerPerfil(perfil);
-            Usuario saved = repo.save(u);
-            log.info("Perfil {} removido do usuário id={}", perfil, id);
-            return saved;
-        } catch (Exception ex) {
-            log.error("Falha ao remover perfil do usuário id={}", id, ex);
-            if (ex instanceof ValidationException vex) throw vex;
-            throw new ServiceOperationException("Falha ao remover perfil", ex);
         }
     }
 
@@ -221,6 +183,17 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
     }
 
+    private boolean senhaForte(String senha) {
+        if (senha == null) return false;
+        String s = senha.trim();
+        if (s.length() < 8) return false;
+        boolean hasUpper = s.chars().anyMatch(Character::isUpperCase);
+        boolean hasLower = s.chars().anyMatch(Character::isLowerCase);
+        boolean hasDigit = s.chars().anyMatch(Character::isDigit);
+        boolean hasSpecial = s.chars().anyMatch(c -> "!@#$%^&*()_+-=[]{}|;':\",.<>/?`~".indexOf(c) >= 0);
+        return hasUpper && hasLower && hasDigit && hasSpecial;
+    }
+
     @Override
     public long contarTodos() {
         try {
@@ -238,6 +211,22 @@ public class UsuarioServiceImpl implements UsuarioService {
         } catch (Exception ex) {
             log.error("Falha ao contar usuários ativos", ex);
             throw new ServiceOperationException("Falha ao contar usuários ativos", ex);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Optional<Usuario> toggleStatus(Long id, boolean ativo) {
+        try {
+            return repo.findById(id).map(u -> {
+                u.setAtivo(ativo);
+                Usuario saved = repo.save(u);
+                log.info("Status do usuário alterado id={} ativo={}", saved.getId(), ativo);
+                return saved;
+            });
+        } catch (Exception ex) {
+            log.error("Falha ao alternar status do usuário id={}", id, ex);
+            throw new ServiceOperationException("Falha ao alternar status do usuário", ex);
         }
     }
 }

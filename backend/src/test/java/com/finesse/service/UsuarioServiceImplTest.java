@@ -42,7 +42,7 @@ class UsuarioServiceImplTest {
         u.setEmail(email);
         u.setSenha("x");
         u.setAtivo(ativo);
-        u.setPerfis(new java.util.HashSet<>(java.util.List.of(Perfil.VISUALIZADOR)));
+        u.setPerfil(Perfil.VISUALIZADOR);
         return u;
     }
 
@@ -69,32 +69,7 @@ class UsuarioServiceImplTest {
         service.alterarSenha(2L, "abcdef");
         verify(repo).save(any());
     }
-
-    @Test
-    void ativar_desativar_usuario() {
-        when(repo.findById(3L)).thenReturn(Optional.of(user(3L, "x@y.com", false)));
-        when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        Usuario ativo = service.ativarUsuario(3L);
-        assertTrue(ativo.getAtivo());
-
-        when(repo.findById(4L)).thenReturn(Optional.of(user(4L, "x@y.com", true)));
-        Usuario inativo = service.desativarUsuario(4L);
-        assertFalse(inativo.getAtivo());
-    }
-
-    @Test
-    void adicionar_remover_perfil() {
-        Usuario u = user(5L, "z@w.com", true);
-        when(repo.findById(5L)).thenReturn(Optional.of(u));
-        when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        Usuario with = service.adicionarPerfil(5L, Perfil.ADMIN);
-        assertTrue(with.temPerfil(Perfil.ADMIN));
-
-        when(repo.findById(6L)).thenReturn(Optional.of(with));
-        Usuario without = service.removerPerfil(6L, Perfil.ADMIN);
-        assertFalse(without.temPerfil(Perfil.ADMIN));
-    }
-
+    
     @Test
     void listarAtivos_eContar() {
         when(repo.findAll()).thenReturn(List.of(user(1L, "a@b.com", true), user(2L, "c@d.com", false)));

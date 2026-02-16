@@ -35,20 +35,8 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
+    perfil VARCHAR(50) NOT NULL DEFAULT 'VISUALIZADOR',
     ativo BOOLEAN DEFAULT true NOT NULL
-);
-
--- -------------------------
--- Tabela: usuario_perfis (N:N)
--- -------------------------
-CREATE TABLE IF NOT EXISTS public.usuario_perfis (
-    usuario_id BIGINT NOT NULL,
-    perfil VARCHAR(50) NOT NULL,
-
-    CONSTRAINT fk_usuario_perfis FOREIGN KEY (usuario_id)
-        REFERENCES public.usuarios(id) ON DELETE CASCADE,
-
-    CONSTRAINT pk_usuario_perfis PRIMARY KEY (usuario_id, perfil)
 );
 
 -- =============================================
@@ -169,19 +157,13 @@ CREATE TABLE IF NOT EXISTS servico_materiais (
 
 
 -- Inserir usuário administrador
-INSERT INTO public.usuarios (nome, email, senha, ativo)
+INSERT INTO public.usuarios (nome, email, senha, perfil,  ativo)
 VALUES (
     'Administrador',
     'admin@sistema.com',
     '$2a$10$es.zMEVd7ASaVWWXiKaceOnX7hoEm3wHgIL9d5UjgcfPDpGxqSQtK',
+    'ADMIN',
     true
-);
-
--- Atribuir perfil de administrador
-INSERT INTO public.usuario_perfis (usuario_id, perfil)
-VALUES (
-    (SELECT id FROM public.usuarios WHERE email = 'admin@sistema.com'),
-    'ADMIN'
 );
 
 -- =============================================

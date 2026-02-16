@@ -57,7 +57,7 @@ public class AtividadeController {
     @Operation(summary = "Criar atividade")
     @ApiResponse(responseCode = "201", description = "Criado", content = @Content(schema = @Schema(implementation = Atividade.class)))
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Atividade> create(@Valid @RequestBody Atividade body) {
         Atividade created = atividadeService.create(body);
         return ResponseEntity.created(URI.create("/api/atividades/" + created.getId())).body(created);
@@ -65,7 +65,7 @@ public class AtividadeController {
 
     @Operation(summary = "Atualizar atividade")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Atividade> update(@PathVariable Long id, @Valid @RequestBody Atividade body) {
         return atividadeService.update(id, body)
                 .map(ResponseEntity::ok)
@@ -74,7 +74,7 @@ public class AtividadeController {
 
     @Operation(summary = "Alterar status (ativar/inativar)")
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Atividade> toggle(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         Object ativo = payload.get("ativo");
         if (!(ativo instanceof Boolean)) {

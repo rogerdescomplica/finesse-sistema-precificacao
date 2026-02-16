@@ -57,7 +57,7 @@ public class MaterialController {
     @Operation(summary = "Criar material")
     @ApiResponse(responseCode = "201", description = "Criado", content = @Content(schema = @Schema(implementation = Material.class)))
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Material> create(@Valid @RequestBody Material body) {
         Material created = materialService.create(body);
         return ResponseEntity.created(URI.create("/api/materiais/" + created.getId())).body(created);
@@ -65,7 +65,7 @@ public class MaterialController {
 
     @Operation(summary = "Atualizar material")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Material> update(@PathVariable Long id, @Valid @RequestBody Material body) {
         return materialService.update(id, body)
                 .map(ResponseEntity::ok)
@@ -74,7 +74,7 @@ public class MaterialController {
 
     @Operation(summary = "Alterar status (ativar/inativar)")
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Material> toggle(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         Object ativo = payload.get("ativo");
         if (!(ativo instanceof Boolean)) {

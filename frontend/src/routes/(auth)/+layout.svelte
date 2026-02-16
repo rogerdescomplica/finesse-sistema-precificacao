@@ -31,6 +31,8 @@
 
 	const userName = $derived(auth.user?.nome ?? '--');
 	const userEmail = $derived(auth.user?.email ?? '--');
+	const isViewer = $derived(Boolean(auth.user?.roles?.includes('ROLE_VISUALIZADOR') && !auth.user?.roles?.includes('ROLE_ADMIN')));
+	const allowedViewerPaths = ['/dashboard', '/precificacao', '/logout'];
 	const userInitials = $derived.by(() => {
 		const nome = auth.user?.nome?.trim();
 		if (!nome) return 'AD';
@@ -82,6 +84,17 @@
 		}
 	});
 	
+	$effect(() => {
+		if (!auth.user) return;
+		if (!isViewer) return;
+		const path = page.url.pathname;
+		const allowed = allowedViewerPaths.some((p) => path === p || path.startsWith(p));
+		if (!allowed) {
+			const from = encodeURIComponent(path);
+			goto(`/forbidden?from=${from}`, { replaceState: true });
+		}
+	});
+	
 	function handleSettingsClick() {
 		goto('/configuracoes');
 	}
@@ -111,7 +124,7 @@
 	</div>
 
 {:else}
-	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+	<div class="min-h-screen bg-linear-to-br from-rose-50 via-white to-slate-100">
 		<Sidebar />
 
 		<PageHeader
@@ -123,7 +136,7 @@
 		/>
 
 		<main
-			class="py-10 lg:pl-(--sidebar-width) bg-linear-to-br from-red-50 via-white to-blue-50"
+			class="py-10 lg:pl-(--sidebar-width)"
 		>
 			<div class="px-4 sm:px-6 lg:px-15">
 				{@render children()}

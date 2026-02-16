@@ -29,6 +29,7 @@ import com.finesse.entity.Perfil;
 import com.finesse.entity.Usuario;
 import com.finesse.service.UsuarioService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
 /**
@@ -132,14 +133,11 @@ public class UsuarioController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> atualizar(
-            @PathVariable Long id,
-            @Valid @RequestBody AtualizarUsuarioRequestRecord request
-    ) {
+    public ResponseEntity<?> atualizar( @PathVariable Long id, @Valid @RequestBody AtualizarUsuarioRequestRecord request) {
         try {
-          //  Usuario usuario = this.usuarioService.atualizarUsuario(id, request);
-           // UsuarioRecord dto = convertToDTO(usuario);
-            return ResponseEntity.ok(null);
+            Usuario usuario = this.usuarioService.atualizarUsuario(id, request);
+            UsuarioRecord dto = convertToDTO(usuario);
+            return ResponseEntity.ok(dto);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
@@ -171,95 +169,18 @@ public class UsuarioController {
         }
     }
 
-    /**
-     * Ativar um usuário
-     * PATCH /api/usuarios/{id}/ativar
-     */
-    @PatchMapping("/{id}/ativar")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> ativar(@PathVariable Long id) {
-        try {
-            Usuario usuario = usuarioService.ativarUsuario(id);
-            UsuarioRecord dto = convertToDTO(usuario);
-            return ResponseEntity.ok(dto);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+     @Operation(summary = "Alterar status (ativar/inativar)")
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<UsuarioRecord> toggle(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        Object ativo = payload.get("ativo");
+        if (!(ativo instanceof Boolean)) {
+            return ResponseEntity.badRequest().build();
         }
-    }
-
-    /**
-     * Desativar um usuário
-     * PATCH /api/usuarios/{id}/desativar
-     */
-    @PatchMapping("/{id}/desativar")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> desativar(@PathVariable Long id) {
-        try {
-            // Não permitir que o admin desative a si mesmo
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-            
-            if (usuarioLogado.getId().equals(id)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "Você não pode desativar sua própria conta"));
-            }
-
-            Usuario usuario = usuarioService.desativarUsuario(id);
-            UsuarioRecord dto = convertToDTO(usuario);
-            return ResponseEntity.ok(dto);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    /**
-     * Adicionar perfil ao usuário
-     * POST /api/usuarios/{id}/perfis/{perfil}
-     */
-    @PostMapping("/{id}/perfis/{perfil}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> adicionarPerfil(
-            @PathVariable Long id,
-            @PathVariable String perfil
-    ) {
-        try {
-            Perfil perfilEnum = Perfil.valueOf(perfil.toUpperCase());
-            Usuario usuario = usuarioService.adicionarPerfil(id, perfilEnum);
-            UsuarioRecord dto = convertToDTO(usuario);
-            return ResponseEntity.ok(dto);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Perfil inválido: " + perfil));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    /**
-     * Remover perfil do usuário
-     * DELETE /api/usuarios/{id}/perfis/{perfil}
-     */
-    @DeleteMapping("/{id}/perfis/{perfil}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> removerPerfil(
-            @PathVariable Long id,
-            @PathVariable String perfil
-    ) {
-        try {
-            Perfil perfilEnum = Perfil.valueOf(perfil.toUpperCase());
-            Usuario usuario = usuarioService.removerPerfil(id, perfilEnum);
-            UsuarioRecord dto = convertToDTO(usuario);
-            return ResponseEntity.ok(dto);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Perfil inválido: " + perfil));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return usuarioService.toggleStatus(id, (Boolean) ativo)
+                .map(this::convertToDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**
@@ -332,20 +253,14 @@ public class UsuarioController {
 
     // Método auxiliar para converter Usuario para DTO
     private UsuarioRecord convertToDTO(Usuario usuario) {
-              
-       List<String> perfis = usuario.getPerfis().stream()
-                .map(Perfil::name)
-                .collect(Collectors.toList());
-              
-        UsuarioRecord dto = new UsuarioRecord(
+        String perfil = usuario.isAdmin() ? Perfil.ADMIN.name() : Perfil.VISUALIZADOR.name();
+        return new UsuarioRecord(
             usuario.getId(),
             usuario.getNome(),
             usuario.getEmail(),
             usuario.getAtivo(),
-            perfis,
+            perfil,
             usuario.isAdmin()
         );
-        
-        return dto;
     }
 }

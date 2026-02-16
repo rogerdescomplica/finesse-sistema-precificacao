@@ -1,7 +1,9 @@
 package com.finesse.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.finesse.dto.AtualizarUsuarioRequestRecord;
 import com.finesse.entity.Perfil;
 import com.finesse.entity.Usuario;
 
@@ -65,14 +67,12 @@ public interface UsuarioService {
 
     /**
      * Atualizar usuário existente
-     * 
+     *
      * @param id ID do usuário
-     * @param form Form com dados para atualizar
+     * @param request dados para atualizar
      * @return Usuário atualizado
-     * @throws RuntimeException se usuário não for encontrado ou dados inválidos
-    
-    Usuario atualizarUsuario(Long id, AtualizarUsuarioForm form);
-    */
+     */
+    Usuario atualizarUsuario(Long id, AtualizarUsuarioRequestRecord request);
 
     /**
      * Alterar senha de um usuário
@@ -82,44 +82,6 @@ public interface UsuarioService {
      * @throws RuntimeException se usuário não for encontrado ou senha inválida
      */
     void alterarSenha(Long id, String novaSenha);
-
-    /**
-     * Ativar um usuário desativado
-     * 
-     * @param id ID do usuário
-     * @return Usuário ativado
-     * @throws RuntimeException se usuário não for encontrado ou já estiver ativo
-     */
-    Usuario ativarUsuario(Long id);
-
-    /**
-     * Desativar um usuário ativo
-     * 
-     * @param id ID do usuário
-     * @return Usuário desativado
-     * @throws RuntimeException se usuário não for encontrado ou já estiver desativado
-     */
-    Usuario desativarUsuario(Long id);
-
-    /**
-     * Adicionar perfil ao usuário
-     * 
-     * @param id ID do usuário
-     * @param perfil Perfil a ser adicionado
-     * @return Usuário com perfil adicionado
-     * @throws RuntimeException se usuário não for encontrado ou já tiver o perfil
-     */
-    Usuario adicionarPerfil(Long id, Perfil perfil);
-
-    /**
-     * Remover perfil do usuário
-     * 
-     * @param id ID do usuário
-     * @param perfil Perfil a ser removido
-     * @return Usuário com perfil removido
-     * @throws RuntimeException se usuário não tiver o perfil ou for o único perfil
-     */
-    Usuario removerPerfil(Long id, Perfil perfil);
 
     /**
      * Deletar usuário permanentemente (exclusão física)
@@ -150,4 +112,14 @@ public interface UsuarioService {
      * @return Quantidade de usuários ativos
      */
     long contarAtivos();
+
+    /**
+     * Alternar status (ativo/desativo) de um usuário
+     * 
+     * @param id ID do usuário
+     * @param ativo Novo status desejado
+     * @return Usuário com status atualizado
+     * @throws RuntimeException se usuário não for encontrado
+     */
+    Optional<Usuario> toggleStatus(Long id, boolean ativo);
 }

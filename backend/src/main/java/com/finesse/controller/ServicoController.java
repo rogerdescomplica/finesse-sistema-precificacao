@@ -115,7 +115,7 @@ public class ServicoController {
     @Operation(summary = "Criar serviço")
     @ApiResponse(responseCode = "201", description = "Criado", content = @Content(schema = @Schema(implementation = Servico.class)))
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Servico> create(@Valid @RequestBody Servico body) {
         Servico created = servicoService.create(body);
         if (body.getPrecoPraticadoInput() != null) {
@@ -126,7 +126,7 @@ public class ServicoController {
 
     @Operation(summary = "Atualizar serviço")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Servico> update(@PathVariable Long id, @Valid @RequestBody Servico body) {
         var updated = servicoService.update(id, body);
         if (updated.isPresent() && body.getPrecoPraticadoInput() != null) {
@@ -137,7 +137,7 @@ public class ServicoController {
 
     @Operation(summary = "Alterar status (ativar/inativar)")
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Servico> toggle(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         Object ativo = payload.get("ativo");
         if (!(ativo instanceof Boolean)) {

@@ -9,7 +9,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Entidade que representa os usuários do sistema
@@ -38,11 +37,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, length = 255)
     private String senha;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "usuario_perfis", joinColumns = @JoinColumn(name = "usuario_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "perfil")
-    private Set<Perfil> perfis = new HashSet<>();
+    @Column(name = "perfil", nullable = false, length = 32)
+    private Perfil perfil = Perfil.VISUALIZADOR;
 
     @Column(name = "ativo")
     private Boolean ativo = true;
@@ -58,18 +55,16 @@ public class Usuario implements UserDetails {
 
     @PrePersist
     protected void onCreate() {
-        // Se não tiver perfil definido, adiciona ATENDENTE por padrão
-        if (perfis.isEmpty()) {
-            perfis.add(Perfil.VISUALIZADOR);
+        // Se não tiver perfil definido, adiciona VISUALIZADOR por padrão
+        if (perfil == null) {
+            perfil = Perfil.VISUALIZADOR;
         }
     }
 
     // Implementação do UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return perfis.stream()
-                .map(perfil -> new SimpleGrantedAuthority(perfil.getRole()))
-                .collect(Collectors.toList());
+        return Collections.singletonList(new SimpleGrantedAuthority(perfil.getRole()));
     }
 
     @Override
@@ -104,15 +99,15 @@ public class Usuario implements UserDetails {
 
     // Métodos auxiliares
     public void adicionarPerfil(Perfil perfil) {
-        this.perfis.add(perfil);
+        this.perfil = perfil;
     }
 
     public void removerPerfil(Perfil perfil) {
-        this.perfis.remove(perfil);
+        this.perfil = Perfil.VISUALIZADOR;
     }
 
     public boolean temPerfil(Perfil perfil) {
-        return this.perfis.contains(perfil);
+        return this.perfil == perfil;
     }
 
     public boolean isAdmin() {
@@ -148,12 +143,12 @@ public class Usuario implements UserDetails {
         this.senha = senha;
     }
 
-    public Set<Perfil> getPerfis() {
-        return perfis;
+    public Perfil getPerfil() {
+        return perfil;
     }
 
-    public void setPerfis(Set<Perfil> perfis) {
-        this.perfis = perfis;
+    public void setPerfil(Perfil perfil) {
+        this.perfil = perfil;
     }
 
     public Boolean getAtivo() {

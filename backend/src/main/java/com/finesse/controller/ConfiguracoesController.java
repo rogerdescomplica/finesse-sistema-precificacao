@@ -40,14 +40,14 @@ public class ConfiguracoesController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Configuracoes> create(@RequestBody Configuracoes body) {
         Configuracoes created = service.create(body);
         return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Configuracoes> update(@PathVariable Long id, @RequestBody Configuracoes body) {
         return service.update(id, body)
                 .map(ResponseEntity::ok)
@@ -55,7 +55,7 @@ public class ConfiguracoesController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Configuracoes> toggle(@PathVariable Long id, @RequestBody java.util.Map<String, Object> payload) {
         Object ativo = payload.get("ativo");
         if (!(ativo instanceof Boolean)) {
