@@ -1,54 +1,138 @@
-# Finesse App - Banco de Dados PostgreSQL em Docker
+# Sistema de Precificação – Finesse Centro Integrado
 
-## Requisitos
-- Docker Desktop (Windows/macOS) ou Docker Engine (Linux)
-- Porta `5432` livre no host
+Sistema desenvolvido para cálculo inteligente de preços de serviços de estética e saúde, considerando custos reais da clínica, impostos, custo fixo e margem de lucro.
 
-## Compose
-O projeto inclui um `docker-compose.yml` com:
-- `postgres` (imagem oficial `postgres:16-alpine`), com variáveis `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, porta `5432`, volume persistente e init script `init.sql`
-- `pgadmin` para administração via UI (`http://localhost:8081`)
-- `postgres-backup` com backups diários (`pg_dump`) para `/backups`
+Projeto aplicado na **Finesse Centro Integrado – Florianópolis**, responsável técnica Dra. Thayse Vieira.
 
-### Inicialização
-```sh
+---
+
+## Problema real da clínica
+
+Na área de estética e saúde, muitos preços são definidos sem considerar:
+
+* custo real de insumos
+* tempo da profissional
+* impostos
+* custo fixo da clínica
+* margem de lucro desejada
+
+Isso gera prejuízo sem perceber.
+
+👉 Este sistema resolve isso com cálculo automático.
+
+---
+
+## Metodologia de Precificação
+
+Cálculo baseado em custo direto + impostos + custo fixo + margem de lucro.
+
+```
+custo direto = mão de obra + insumos
+imposto % = alíquota atividade
+custo fixo % = média das receitas / média das despesas
+lucro líquido = vendaAtual × (1 − imposto − custo fixo) − custoDireto
+```
+
+### Preço sugerido
+
+```
+markup = 1 ÷ (1 − (impostos + custo fixo + margem))
+preço sugerido = custo direto × markup
+```
+
+Aplicado em serviços reais como:
+
+* Preenchimento labial
+* Bioestimulador
+* Limpeza de pele
+* Drenagem linfática
+* Microagulhamento
+....
+---
+
+##  Stack Tecnológica
+
+**Backend**
+
+* Java Spring Boot
+* PostgreSQL
+* JPA / Hibernate
+
+**Frontend**
+
+* SvelteKit + Tailwind
+* Integração REST API
+
+**Infra**
+
+* Docker Compose
+* pgAdmin
+
+---
+
+## Funcionalidades
+
+✔ Cadastro de serviços
+✔ Controle de materiais
+✔ Cálculo automático de markup
+✔ Simulação de preço praticado
+✔ Lucro líquido por serviço
+✔ Ajuste de alíquota
+✔ Relatórios para gestão da clínica
+
+---
+
+## Projeto Acadêmico
+
+Curso: Análise e Desenvolvimento de Sistemas
+Projeto de Extensão (PEX V)
+
+Sistema aplicado em empresa real: **Finesse Centro Integrado de Saúde, Beleza e Bem Estar**.
+
+---
+
+## Como rodar o projeto
+
+### Banco de Dados (Docker)
+
+```bash
 docker compose up -d
 ```
-- Reinicia automaticamente (`restart: unless-stopped`)
-- Healthcheck garante que dependentes iniciem após o banco estar pronto
 
-### Parar/Remover
-```sh
-docker compose down
-```
-Para preservar dados, os volumes permanecem. Para limpar:
-```sh
-docker compose down -v
-```
+pgAdmin → http://localhost:8081
 
-## Conexão da Aplicação
-- Backend Spring Boot aponta para `jdbc:postgresql://localhost:5432/finesse_db`
-- Credenciais padrão: `finesse_user` / `finesse_password`
-- Configuração em `backend/src/main/resources/application.yml`
-- Pool Hikari ajustado (`maximum-pool-size: 10`, timeouts)
+---
 
-## Admin Rápido
-- pgAdmin: `http://localhost:8081` (usuario: `admin@finesse.com`, senha: `admin_password`)
-- CLI (exemplo):
-```sh
-docker exec -it finesse-postgres psql -U finesse_user -d finesse_db
+### Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run
 ```
 
-## Backups
-- Serviço `postgres-backup` grava dumps em volume `postgres_backups`
-- Cron: `0 2 * * *` (02:00 diariamente)
-- Para recuperar um backup: copie o arquivo `.sql` e restaure via `psql` ou pgAdmin
+---
 
-## Scripts de Inicialização
-- `init.sql` em raiz é montado como `/docker-entrypoint-init.sql`
-- Adicione seus scripts de criação de esquemas/roles neste arquivo (ou mapeie uma pasta para `/docker-entrypoint-initdb.d`)
+### Frontend
 
-## Dicas
-- Em produção, configure variáveis via `.env` e não commite credenciais
-- Restrinja CORS e use TLS para conexões externas
-- Ajuste tamanho do pool conforme carga e recursos
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## Estrutura do Projeto
+
+```
+backend/
+frontend/
+docker-compose.yml
+init.sql
+docs/
+```
+
+---
+
+# Banco de Dados PostgreSQL em Docker
+
