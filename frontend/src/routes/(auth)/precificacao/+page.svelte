@@ -66,26 +66,26 @@
   }
 
   function calcRow(s: Servico, precoMap: Map<number, number | null>, matCost = 0): Row {
-    const atv = atividades.find(a => a.id === (s.atividade?.id ?? 0)) || null
-    const imposto = atv ? Number(atv.aliquotaTotalPct || 0)/100 : 0
-    const fixo = config ? Number(config.custoFixoPct || 0)/100 : 0
-    const margem = (s.margemLucroCustomPct != null ? Number(s.margemLucroCustomPct) : Number(config?.margemLucroPadraoPct || 0)) / 100
-    const vm = valorMinuto(config)
-    const mao = Number(s.duracaoMinutos || 0) * vm
-    const vendaAtual = Number(precoMap.get(s.id) ?? 0)
-    const mat = matCost
-    const direto = mao + mat
-    const sum = imposto + fixo + margem
-    const denom = 1 - sum
-    const fator = denom > 0 ? 1/denom : (1 + sum)
-    const sugerida = direto * fator
-    const lucro = vendaAtual * (1 - imposto - fixo) - direto
-    const margemPct = vendaAtual > 0 ? (lucro / vendaAtual) * 100 : 0
-    let status: Row['status'] = 'SAUDÁVEL'
-    const priceClose = Math.abs(vendaAtual - sugerida) <= 0.01
-    if (lucro < -1e-6) status = 'PREJUÍZO'
-    else if (priceClose) status = 'SAUDÁVEL'
-    else if (margemPct < margem*100 - 0.05) status = 'ABAIXO'
+    const atv = atividades.find(a => a.id === (s.atividade?.id ?? 0)) || null;
+    const imposto = atv ? Number(atv.aliquotaTotalPct || 0)/100 : 0;
+    const fixo = config ? Number(config.custoFixoPct || 0)/100 : 0;
+    const margem = (s.margemLucroCustomPct != null ? Number(s.margemLucroCustomPct) : Number(config?.margemLucroPadraoPct || 0)) / 100;
+    const vm = valorMinuto(config);
+    const mao = Number(s.duracaoMinutos || 0) * vm;
+    const vendaAtual = Number(precoMap.get(s.id) ?? 0);
+    const mat = matCost;
+    const direto = mao + mat;
+    const sum = imposto + fixo + margem;
+    const denom = 1 - sum;
+    const fator = denom > 0 ? 1/denom : (1 + sum);
+    const sugerida = direto * fator;
+    const lucro = vendaAtual * (1 - imposto - fixo) - direto;
+    const margemPct = vendaAtual > 0 ? (lucro / vendaAtual) * 100 : 0;
+    let status: Row['status'] = 'SAUDÁVEL';
+    const priceClose = Math.abs(vendaAtual - sugerida) <= 0.01;
+    if (lucro < -1e-6) status = 'PREJUÍZO';
+    else if (priceClose) status = 'SAUDÁVEL';
+    else if (margemPct < margem*100 - 0.05) status = 'ABAIXO';
     return {
       id: s.id, nome: s.nome, grupo: s.grupo,
       custoMaoObra: mao, custoMateriais: mat, custoDireto: direto,
@@ -368,7 +368,7 @@
                 <th class="text-right">Imp. (%)</th>
                 <th class="text-right">Fixo (%)</th>
                 <th class="text-right">Margem (%)</th>
-                <th class="text-right">Fator Preço</th>
+                <th class="text-right">Markup</th>
                 <th class="text-right">Venda Atual</th>
                 <th class="text-right">Venda Sugerida</th>
                 <th class="text-right">Lucro (R$)</th>
