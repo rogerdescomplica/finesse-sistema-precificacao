@@ -1,0 +1,35 @@
+# ===== Node =====
+node_modules/
+dist/
+build/
+
+# ===== Java / Spring =====
+target/
+*.class
+*.jar
+*.log
+
+# ===== Env =====
+.env
+.env.*
+application-prod.yml
+
+# ===== IDE =====
+.vscode/
+.idea/
+.trae/
+
+# ===== Logs =====
+logs/
+*.log
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Docker volumes =====
+postgres-data/
+postgres_backups/
+
+# ===== Vercel =====
+.vercel/
