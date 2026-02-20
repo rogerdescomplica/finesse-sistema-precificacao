@@ -129,7 +129,6 @@ backend/
 frontend/
 docker-compose.yml
 init.sql
-docs/
 ```
 
 ---
