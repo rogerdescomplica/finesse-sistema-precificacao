@@ -1,26 +1,36 @@
 spring:
   config:
-      activate:
-        on-profile: prod
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
   app:
     security:
-        cors:
-          allowed-origins: https://seudominio.com,https://www.seudominio.com
-        
-        cookie:
-          secure: true  #PROD: true (HTTPS obrigatório)
+      cors:
+        allowed-origins: https://app.finessecentrointegrado.com.br
+      cookie:
+        secure: true
 
   jpa:
     hibernate:
-      ddl-auto: validate           # NUNCA use 'update' em produção!
-      show-sql: false                # Desabilita logs SQL em produção
+      ddl-auto: validate
+      show-sql: false
       properties:
-          hibernate:
-              format_sql: false
+        hibernate:
+          format_sql: false
 
   flyway:
     enabled: true
-    baseline-on-migrate: false     # Já deve ter baseline em prod
+    baseline-on-migrate: false
 
   logging:
     level:

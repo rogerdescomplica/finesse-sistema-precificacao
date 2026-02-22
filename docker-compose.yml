@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.2-alpine3.22
     container_name: finesse-postgres
     environment:
       POSTGRES_DB: finesse_db
@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - finesse-network
     restart: unless-stopped
@@ -20,6 +20,24 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: finesse-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/finesse_db
+      SPRING_DATASOURCE_USERNAME: finesse_user
+      SPRING_DATASOURCE_PASSWORD: finesse_password
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - finesse-network
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4:latest
