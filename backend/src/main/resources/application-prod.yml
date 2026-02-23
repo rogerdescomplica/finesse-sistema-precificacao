@@ -27,11 +27,14 @@ spring:
       properties:
         hibernate:
           format_sql: false
+          default_schema: public
 
   flyway:
     enabled: true
+    locations: classpath:db/migration
     baseline-on-migrate: true  # mude para true na primeira vez
     #baseline-on-migrate: false
+    schemas: public
 
   logging:
     level:

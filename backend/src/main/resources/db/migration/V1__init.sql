@@ -1,6 +1,3 @@
--- Criar schema se não existir
-CREATE SCHEMA IF NOT EXISTS public;
-
 -- Configurar UTF-8
 SET client_encoding = 'UTF8';
 
@@ -38,25 +35,6 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
     perfil VARCHAR(50) NOT NULL DEFAULT 'VISUALIZADOR',
     ativo BOOLEAN DEFAULT true NOT NULL
 );
-
--- =============================================
--- 5. TRIGGERS
--- =============================================
-
-CREATE OR REPLACE FUNCTION public.trg_atualizar_custo_servico_material()
-RETURNS TRIGGER AS $$
-DECLARE
-    v_custo NUMERIC;
-BEGIN
-    SELECT custo_unitario INTO v_custo
-    FROM public.materiais
-    WHERE id = NEW.material_id;
-
-    NEW.custo_total := v_custo * NEW.quantidade_usada;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
 
 -- Tabela para a entidade Configuracoes
 
