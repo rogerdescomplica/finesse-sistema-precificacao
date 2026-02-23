@@ -30,7 +30,8 @@ spring:
 
   flyway:
     enabled: true
-    baseline-on-migrate: false
+    baseline-on-migrate: true  # mude para true na primeira vez
+    #baseline-on-migrate: false
 
   logging:
     level:
