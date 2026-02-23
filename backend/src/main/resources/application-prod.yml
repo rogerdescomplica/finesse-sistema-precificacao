@@ -13,38 +13,51 @@ spring:
       minimum-idle: 2
       connection-timeout: 30000
 
-  app:
-    security:
-      cors:
-        allowed-origins: https://app.finessecentrointegrado.com.br
-      cookie:
-        secure: true
-
   jpa:
     hibernate:
       ddl-auto: validate
-      show-sql: false
-      properties:
-        hibernate:
-          format_sql: false
-          default_schema: public
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        default_schema: public
 
   flyway:
     enabled: true
     locations: classpath:db/migration
-    baseline-on-migrate: true  # mude para true na primeira vez
-    #baseline-on-migrate: false
+    baseline-on-migrate: true
     schemas: public
     baseline-version: 1
 
-  logging:
-    level:
-      com.finesse: INFO
-      org.springframework.web.cors: WARN
-      org.springframework.security: WARN
-      org.hibernate.SQL: WARN
-      org.hibernate.type.descriptor.sql.BasicBinder: WARN
-    file:
-      name: /var/log/finesse/finesse-backend.log
-      max-size: 50MB
-      max-history: 90
+app:
+  security:
+    cors:
+      allowed-origins: https://app.finessecentrointegrado.com.br
+
+    cookie:
+      secure: true
+      http-only: true
+
+      # Escolha baseada em como você chama a API:
+      # 1) Se você acessa a API como "https://app.finessecentrointegrado.com.br/api/..." (mesmo domínio via proxy):
+      #    use Lax (recomendado)
+      # 2) Se você acessa direto o Railway em outro domínio (cross-site) e depende de cookie:
+      #    use None (e precisa Secure=true, que já está)
+      same-site: None
+
+    jwt:
+      # Em PROD, sem fallback. Se não tiver, o app deve falhar ao subir.
+      secret: ${JWT_SECRET}
+      expiration-ms: ${JWT_EXPIRATION_MS:900000}
+      refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+
+# 🧾 Logging (PROD) — deixe em stdout (Railway captura)
+logging:
+  level:
+    com.finesse: INFO
+    org.springframework.web.cors: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
