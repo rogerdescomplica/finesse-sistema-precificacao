@@ -1,4 +1,4 @@
-export type UnidadeMedida = 'UN' | 'KG' | 'G' | 'L' | 'ML' | 'M'
+export type UnidadeMedida = 'UN' | 'KG' | 'G' | 'L' | 'ML' | 'M' | 'UI'
 
 export interface Material {
   id: number

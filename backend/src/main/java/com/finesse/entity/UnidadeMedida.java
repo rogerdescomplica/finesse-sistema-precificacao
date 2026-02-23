@@ -9,7 +9,8 @@ public enum UnidadeMedida {
     ML("ML", "Mililitro"),
     G("G", "Grama"),
     L("L", "Litro"),
-    KG("KG", "Quilograma");
+    KG("KG", "Quilograma"),
+    UI("UI", "Unidade de Internacional");
 
     private final String sigla;
     private final String descricao;
