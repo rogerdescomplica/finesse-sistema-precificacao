@@ -62,8 +62,8 @@
 						<td class="px-4 py-2 text-sm font-medium text-gray-900">{formatCurrency(cfg.pretensaoSalarialMensal)}</td>
 						<td class="px-4 py-2 text-sm text-gray-700">{formatNumber(cfg.horasSemanais, 2)}</td>
 						<td class="px-4 py-2 text-sm text-gray-700">{formatNumber(cfg.semanasMediaMes, 2)}</td>
-						<td class="px-4 py-2 text-sm text-gray-700">{formatNumber(cfg.custoFixoPct, 4)}%</td>
-						<td class="px-4 py-2 text-sm text-gray-700">{formatNumber(cfg.margemLucroPadraoPct, 4)}%</td>
+						<td class="px-4 py-2 text-sm text-gray-700">{formatNumber(cfg.custoFixoPct, 2)}%</td>
+						<td class="px-4 py-2 text-sm text-gray-700">{formatNumber(cfg.margemLucroPadraoPct, 2)}%</td>
 						<td class="px-4 py-2 text-sm {getStatusClass(cfg.ativo)}">{getStatusText(cfg.ativo)}</td>
 						<td class="px-4 py-2 text-right">
 							<div class="flex items-center justify-end gap-2">
