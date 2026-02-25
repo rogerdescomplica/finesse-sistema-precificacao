@@ -161,7 +161,7 @@
 			</div>
 
 			<div
-				class="cursor-pointer rounded-xl border border-gray-200 bg-gray-50/30 p-4 transition-colors hover:bg-white"
+				class="rounded-xl border border-gray-200 bg-gray-50/30 p-4 transition-colors hover:bg-white"
 				onclick={() => (form.ativo = !form.ativo)}
 				role="button"
 				tabindex="0"

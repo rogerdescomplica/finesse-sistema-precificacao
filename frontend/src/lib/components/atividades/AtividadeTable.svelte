@@ -100,7 +100,7 @@
 						<td class="px-4 py-2 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
 									class:border-green-300={!atividade.ativo}
 									class:text-green-700={!atividade.ativo}
 									class:border-gray-300={atividade.ativo}
@@ -110,7 +110,7 @@
 									{atividade.ativo ? 'Inativar' : 'Ativar'}
 								</button>
 								<button
-									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
 									onclick={() => onEdit(atividade)}
 									title="Editar"
 								>

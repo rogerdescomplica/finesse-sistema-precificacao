@@ -61,7 +61,7 @@
       <li>
         <button
           type="button"
-          class="cursor-pointer inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           onclick={goPrev}
           disabled={isFirstPage}
           aria-label="Página anterior"
@@ -85,7 +85,7 @@
             {:else}
               <button
                 type="button"
-                class="cursor-pointer inline-flex h-8 min-w-[32px] items-center justify-center rounded-md border border-transparent bg-white px-2 text-sm font-semibold text-blue-600 transition-colors hover:bg-gray-50"
+                class="inline-flex h-8 min-w-[32px] items-center justify-center rounded-md border border-transparent bg-white px-2 text-sm font-semibold text-blue-600 transition-colors hover:bg-gray-50"
                 onclick={() => onPageChange(p)}
                 aria-label={`Página ${p}`}
                 title={`Página ${p}`}
@@ -100,7 +100,7 @@
       <li>
         <button
           type="button"
-          class="cursor-pointer inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           onclick={goNext}
           disabled={isLastPage}
           aria-label="Próxima página"

@@ -14,6 +14,6 @@
     <p class="mt-2 text-sm text-red-700">Você não possui permissão para acessar esta página.</p>
   {/if}
   <div class="mt-4">
-    <Button onclick={goDashboard} class="cursor-pointer">Ir para Dashboard</Button>
+    <Button onclick={goDashboard}>Ir para Dashboard</Button>
   </div>
 </div>

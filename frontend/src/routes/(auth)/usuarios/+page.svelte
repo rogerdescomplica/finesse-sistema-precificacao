@@ -42,7 +42,7 @@
     <Card.Title class="text-xl">Usuários</Card.Title>
     <Card.Description>Listagem e gerenciamento</Card.Description>
   </div>
-  <Button class="inline-flex items-center gap-2 cursor-pointer" onclick={() => { crud.openCreateForm(); sheetOpen = true; }} disabled={!auth.isAuthenticated}>
+  <Button class="inline-flex items-center gap-2" onclick={() => { crud.openCreateForm(); sheetOpen = true; }} disabled={!auth.isAuthenticated}>
     <Plus size={16} />
     Cadastrar Novo Usuário
   </Button>

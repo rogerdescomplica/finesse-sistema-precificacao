@@ -45,7 +45,7 @@
 	</div>
 
 	<Button
-		class="inline-flex items-center gap-2 cursor-pointer"
+		class="inline-flex items-center gap-2"
 		onclick={() => { crud.openCreateForm(); sheetOpen = true; }}
 		disabled={!auth.isAuthenticated}
 	>

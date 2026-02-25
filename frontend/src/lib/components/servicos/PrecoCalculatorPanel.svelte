@@ -216,7 +216,7 @@
 			</div>
 
 			<button
-				class="cursor-pointer w-full rounded-xl bg-slate-900 text-white px-4 py-2 text-sm shadow hover:bg-slate-800 transition"
+				class="w-full rounded-xl bg-slate-900 text-white px-4 py-2 text-sm shadow hover:bg-slate-800 transition"
 				onclick={handleApplySuggestion}
 			>
 				Aplicar Sugestão

@@ -119,7 +119,7 @@
 						{formatCurrency(it.material.custoUnitario * it.quantidadeUsada)}
 					</div>
 					<button
-						class="cursor-pointer rounded-md border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+						class="rounded-md border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
 						title="Remover"
 						onclick={() => removeItem(it.material.id)}
 					>

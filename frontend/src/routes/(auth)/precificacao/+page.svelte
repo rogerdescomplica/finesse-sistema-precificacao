@@ -400,11 +400,11 @@
                   </td>
                   <td class="text-center">
                     {#if r.status==='SAUDÁVEL'}
-                      <Button class="cursor-pointer" variant="ghost" title="Ajustar preço" onclick={() => openConfirm([r.id])}>Ajustar preço</Button>
+                      <Button class="inline-flex items-center gap-2" variant="ghost" title="Ajustar preço" onclick={() => openConfirm([r.id])}>Ajustar preço</Button>
                     {:else if r.status==='ABAIXO'}
-                      <Button class="cursor-pointer" variant="default" onclick={() => openConfirm([r.id])} title="Aplicar sugestão">Aplicar sugestão</Button>
+                      <Button class="inline-flex items-center gap-2" variant="default" onclick={() => openConfirm([r.id])} title="Aplicar sugestão">Aplicar sugestão</Button>
                     {:else}
-                      <Button class="cursor-pointer" variant="destructive" onclick={() => openConfirm([r.id])} title="Corrigir preço">Corrigir preço</Button>
+                      <Button class="inline-flex items-center gap-2" variant="destructive" onclick={() => openConfirm([r.id])} title="Corrigir preço">Corrigir preço</Button>
                     {/if}
                   </td>
                 </tr>
@@ -433,7 +433,7 @@
                     {/if}
                   </td>
                   <td class="text-center">
-                    <Button class="cursor-pointer" variant={r.status==='SAUDÁVEL'?'ghost':(r.status==='ABAIXO'?'default':'destructive')} onclick={() => openConfirm([r.id])}>
+                    <Button class="inline-flex items-center gap-2" variant={r.status==='SAUDÁVEL'?'ghost':(r.status==='ABAIXO'?'default':'destructive')} onclick={() => openConfirm([r.id])}>
                       {r.status==='SAUDÁVEL' ? 'Ajustar preço' : (r.status==='ABAIXO' ? 'Aplicar sugestão' : 'Corrigir preço')}
                     </Button>
                   </td>
@@ -486,8 +486,8 @@
           Impacto estimado no lucro mensal: {formatCurrency(rows.filter(r => selectedIds.includes(r.id)).reduce((acc, r) => acc + Math.max(0, Number(selectedPrices[r.id] ?? r.vendaSugerida) - r.vendaAtual), 0))}
         </div>
         <div class="mt-4 flex justify-end gap-2">
-          <Button class="cursor-pointer" variant="secondary" onclick={closeConfirm}>Cancelar</Button>
-          <Button class="cursor-pointer" onclick={confirmApply} disabled={actionLoading}>
+          <Button class="inline-flex items-center gap-2" variant="secondary" onclick={closeConfirm}>Cancelar</Button>
+          <Button class="inline-flex items-center gap-2" onclick={confirmApply} disabled={actionLoading}>
             {#if actionLoading}
               Aplicando...
             {:else}

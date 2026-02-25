@@ -45,7 +45,8 @@
 		G: 'Grama',
 		L: 'Litro',
 		ML: 'Mililitro',
-		M: 'Metro'
+		M: 'Metro',
+		UI: 'Unidade Internacional',
 	};
 	function unitDesc(u: Material['unidadeMedida']) {
 		return unitDescriptions[u] ?? String(u);
@@ -125,7 +126,7 @@
 							<div class="flex items-center justify-end gap-2">
 								
 								<button
-									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
 									class:border-green-300={!material.ativo}
 									class:text-green-700={!material.ativo}
 									class:border-gray-300={material.ativo}
@@ -136,7 +137,7 @@
 								</button>
 
 								<button
-									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
 									onclick={() => onEdit(material)}
 									title="Editar"
 								>
@@ -144,7 +145,7 @@
 								</button>
 												
 								<button
-									class="cursor-pointerinline-flex h-9 items-center justify-center rounded-md border border-red-300 px-3 text-sm text-red-700 hover:bg-red-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border border-red-300 px-3 text-sm text-red-700 hover:bg-red-50 transition-colors"
 									onclick={() => onDelete(material)}
 									title="Excluir"
 								>

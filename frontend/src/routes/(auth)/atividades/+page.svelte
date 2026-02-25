@@ -46,7 +46,7 @@
 		<Card.Description>Listagem e gerenciamento</Card.Description>
 	</div>
 	<Button
-		class="inline-flex items-center gap-2 cursor-pointer"
+		class="inline-flex items-center gap-2"
 		onclick={() => { sheetOpen = true; crud.openCreateForm(); }}
 		disabled={!auth.isAuthenticated}
 	>

@@ -68,7 +68,7 @@
 						<td class="px-4 py-2 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button
-									class="cursor-pointerinline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm hover:bg-gray-50 transition-colors"
 									class:border-green-300={!cfg.ativo}
 									class:text-green-700={!cfg.ativo}
 									class:border-gray-300={cfg.ativo}
@@ -78,14 +78,14 @@
 									{cfg.ativo ? 'Inativar' : 'Ativar'}
 								</button>
 								<button
-									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border border-gray-300 px-3 text-sm hover:bg-gray-50 transition-colors"
 									onclick={() => onEdit(cfg)}
 									title="Editar"
 								>
 									<PenLine size={16} />
 								</button>
 								<button
-									class="cursor-pointer inline-flex h-9 items-center justify-center rounded-md border border-red-300 px-3 text-sm text-red-700 hover:bg-red-50 transition-colors"
+									class="inline-flex h-9 items-center justify-center rounded-md border border-red-300 px-3 text-sm text-red-700 hover:bg-red-50 transition-colors"
 									onclick={() => onDelete(cfg)}
 									title="Excluir"
 								>
