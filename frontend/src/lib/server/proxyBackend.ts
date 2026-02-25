@@ -165,6 +165,11 @@ export async function proxyWithRefresh({
       }
 
       const raw = await res.text().catch(() => '');
+      if (!raw || raw.trim().length === 0) {
+        const out = new Response(null, { status: 204 });
+        for (const sc of refreshSetCookies) out.headers.append('set-cookie', sc);
+        return out;
+      }
       return json({ error: raw || 'Resposta inválida do backend' }, { status: 502 });
     }
 

@@ -8,13 +8,28 @@ const unitMap = {
 	G: 'G',
 	L: 'L',
 	ML: 'ML',
-	M: 'M'
+	M: 'M',
+	UI: 'UI'
 } as const;
 
 type UnitKey = keyof typeof unitMap;
 
 type HasUnidadeMedida = {
 	unidadeMedida: UnitKey;
+};
+
+export const GET: RequestHandler = async (event) => {
+	const { id } = event.params;
+	if (!id) return json({ error: 'ID ausente' }, { status: 400 });
+	return proxyWithRefresh({
+		request: event.request,
+		url: event.url,
+		fetch: event.fetch,
+		backendBase: BACKEND_URL,
+		path: `/api/material/${id}`,
+		method: 'GET',
+		mode: 'json'
+	});
 };
 
 function hasUnidadeMedida(value: unknown): value is HasUnidadeMedida {

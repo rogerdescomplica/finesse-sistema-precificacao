@@ -10,7 +10,8 @@ const unitMap = {
   G: 'G',
   L: 'L',
   ML: 'ML',
-  M: 'M'
+  M: 'M',
+  UI: 'UI'
 } as const;
 
 type UnitKey = keyof typeof unitMap;

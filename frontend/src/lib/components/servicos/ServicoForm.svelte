@@ -9,7 +9,7 @@
 	import { Save, X, CircleCheck } from '@lucide/svelte';
 	import { FormValidation } from '$lib/components/servicos/validation/servico.validation.svelte.ts';
 	import ServicoMateriaisEditor from '$lib/components/servicos/ServicoMateriaisEditor.svelte';
-	import type { Material } from '$lib/services/material.service';
+	import { materialService, type Material } from '$lib/services/material.service';
 	import { configService, type Configuracao } from '$lib/services/configuracoes.service';
 	import PrecoCalculatorPanel from '$lib/components/servicos/PrecoCalculatorPanel.svelte';
 	
@@ -99,18 +99,25 @@
 				(async () => {
 					try {
 						const detail: ServicoDetail = await servicoService.get(editingServico.id);
-						materiaisItems = (detail.materiais || []).map((m) => ({
-							material: {
-								id: m.materialId,
-								produto: m.produto,
-								custoUnitario: m.custoUnitario,
-								unidadeMedida: 'UN',
-								volumeEmbalagem: 0,
-								precoEmbalagem: 0,
-								ativo: true
-							},
-							quantidadeUsada: m.quantidadeUsada
-						}));
+						const uniqueIds = Array.from(new Set((detail.materiais || []).map((m) => m.materialId)));
+						const fetched = await Promise.all(uniqueIds.map((id) => materialService.get(id).catch(() => null)));
+						const mapById = new Map<number, Material>();
+						fetched.forEach((mat) => { if (mat) mapById.set(mat.id, mat); });
+						materiaisItems = (detail.materiais || []).map((m) => {
+							const full = mapById.get(m.materialId);
+							return {
+								material: {
+									id: m.materialId,
+									produto: m.produto,
+									custoUnitario: m.custoUnitario,
+									unidadeMedida: full?.unidadeMedida ?? 'UN',
+									volumeEmbalagem: full?.volumeEmbalagem ?? 0,
+									precoEmbalagem: full?.precoEmbalagem ?? 0,
+									ativo: true
+								},
+								quantidadeUsada: m.quantidadeUsada
+							};
+						});
 						if (detail.precoVigente != null) {
 							vendaPraticada = Number(detail.precoVigente);
 							userEditedPrice = true;

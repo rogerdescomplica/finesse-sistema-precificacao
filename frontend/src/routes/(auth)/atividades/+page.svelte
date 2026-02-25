@@ -119,6 +119,15 @@
 <DeleteConfirmDialog
 	atividade={confirmDeleteAtividade}
 	loading={atividadeState.mutating}
-	onConfirm={crud.confirmDelete}
+	onConfirm={async (a) => {
+		try {
+			await crud.confirmDelete(a);
+			successMessage = 'Atividade excluída com sucesso';
+			clearTimeout(successTimer);
+			successTimer = setTimeout(() => { successMessage = ''; }, SUCCESS_DISPLAY_TIME);
+		} catch (error) {
+			console.error('Erro ao excluir atividade:', error);
+		}
+	}}
 	onCancel={crud.cancelDelete}
 />

@@ -111,6 +111,15 @@
 <DeleteConfirmDialog
   usuario={confirmDeleteUsuario}
   loading={usuarioState.mutating}
-  onConfirm={(u) => crud.toggleStatus(u)}
+  onConfirm={async (u) => {
+    try {
+      await crud.confirmDelete(u);
+      successMessage = 'Usuário excluído com sucesso';
+      clearTimeout(successTimer);
+      successTimer = setTimeout(() => { successMessage = ''; }, SUCCESS_DISPLAY_TIME);
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+    }
+  }}
   onCancel={crud.cancelDelete}
 />

@@ -128,6 +128,15 @@
 <DeleteConfirmDialog
 	material={confirmDeleteMaterial}
 	loading={materialState.mutating}
-	onConfirm={crud.confirmDelete}
+	onConfirm={async (m) => {
+		try {
+			await crud.confirmDelete(m);
+			successMessage = 'Material excluído com sucesso';
+			clearTimeout(successTimer);
+			successTimer = setTimeout(() => { successMessage = ''; }, SUCCESS_DISPLAY_TIME);
+		} catch (error) {
+			console.error('Erro ao excluir material:', error);
+		}
+	}}
 	onCancel={crud.cancelDelete}
 />

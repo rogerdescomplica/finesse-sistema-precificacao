@@ -129,6 +129,15 @@
 <DeleteConfirmDialog
 	config={confirmDeleteConfig}
 	loading={configState.loading}
-	onConfirm={crud.confirmDelete}
+	onConfirm={async (cfg) => {
+		try {
+			await crud.confirmDelete(cfg);
+			successMessage = 'Configuração excluída com sucesso';
+			clearTimeout(successTimer);
+			successTimer = setTimeout(() => { successMessage = ''; }, SUCCESS_DISPLAY_TIME);
+		} catch (error) {
+			console.error('Erro ao excluir configuração:', error);
+		}
+	}}
 	onCancel={crud.cancelDelete}
 />

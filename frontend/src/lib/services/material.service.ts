@@ -46,6 +46,12 @@ async function parseError(r: Response, fallback: string) {
 class MaterialService {
   private readonly baseUrl = '/api/material'
 
+  async get(id: number, signal?: AbortSignal): Promise<Material> {
+    const r = await fetch(`${this.baseUrl}/${id}`, { credentials: 'include', signal })
+    if (!r.ok) throw new Error(await parseError(r, 'Falha ao obter material'))
+    return r.json()
+  }
+
   async list(params?: URLSearchParams, signal?: AbortSignal): Promise<Page<Material>> {
     const qs = params?.toString()
     const url = qs ? `${this.baseUrl}?${qs}` : this.baseUrl

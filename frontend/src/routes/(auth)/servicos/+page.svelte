@@ -124,6 +124,15 @@
 <DeleteConfirmDialog
 	servico={confirmDeleteServico}
 	loading={servicoState.mutating}
-	onConfirm={crud.confirmDelete}
+	onConfirm={async (s) => {
+		try {
+			await crud.confirmDelete(s);
+			successMessage = 'Serviço excluído com sucesso';
+			clearTimeout(successTimer);
+			successTimer = setTimeout(() => { successMessage = ''; }, SUCCESS_DISPLAY_TIME);
+		} catch (error) {
+			console.error('Erro ao excluir serviço:', error);
+		}
+	}}
 	onCancel={crud.cancelDelete}
 />
