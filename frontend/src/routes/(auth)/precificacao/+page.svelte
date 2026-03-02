@@ -7,6 +7,7 @@
   import { Button } from '$lib/components/ui/button/index.js';
   import { Separator } from '$lib/components/ui/separator/index.ts';
   import { formatCurrency, formatNumber } from '$lib/utils/formatters';
+  import TablePagination from '$lib/components/utils/TablePagination.svelte';
 
   import { servicoService, type Servico } from '$lib/services/servico.service';
   import { atividadeService, type Atividade } from '$lib/services/atividade.service';
@@ -27,6 +28,8 @@
   let search = $state('');
   let grupoFilter = $state<string>('todos');
   let modoDetalhado = $state(false);
+  let page = $state(1);
+  let perPage = $state(100);
 
   type StatusFilter = 'todos' | 'prejuizo' | 'abaixo' | 'saudavel';
   let statusFilter = $state<StatusFilter>('todos');
@@ -125,6 +128,14 @@
   }
 
   onMount(loadAll)
+  
+  $effect(() => {
+    const q = search;
+    const g = grupoFilter;
+    const st = statusFilter;
+    void q; void g; void st;
+    page = 1;
+  })
 
   const resumoPrejuizo = $derived(rows.filter(r => r.status === 'PREJUÍZO').length)
   const resumoAbaixo = $derived(rows.filter(r => r.status === 'ABAIXO').length)
@@ -143,6 +154,17 @@
       }
       return r
   }
+  
+  const totalItems = $derived(filteredRows().length)
+  const totalPages = $derived(Math.max(1, Math.ceil(totalItems / perPage)))
+  function onPageChange(p: number) {
+    page = Math.max(1, Math.min(totalPages, p))
+  }
+  const pageRows = $derived.by(() => {
+    const r = filteredRows()
+    const start = (page - 1) * perPage
+    return r.slice(start, start + perPage)
+  })
 
   let showConfirm = $state(false)
   let selectedIds = $state<number[]>([])
@@ -212,7 +234,7 @@
   <h1 class="text-3xl font-bold">Precificação / Análise</h1>
   <p class="text-sm text-gray-600">Visão gerencial dos custos, preços e rentabilidade dos serviços</p>
 
-  <div class="mt-6 grid grid-cols-4 gap-4">
+  <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <Card.Root class="rounded-2xl">
       <Card.Content>
         <div class="text-sm text-gray-500">Serviços em prejuízo</div>
@@ -240,9 +262,9 @@
   </div>
 
   <div class="mt-6 rounded-2xl border bg-white">
-    <div class="flex items-center gap-3 p-4">
-      <Input class="h-10" placeholder="Buscar serviço..." bind:value={search} />
-      <select class="h-10 rounded-xl border px-3 text-sm" bind:value={grupoFilter}>
+    <div class="flex flex-wrap items-center gap-3 p-4">
+      <Input class="h-11 w-2/4" placeholder="Buscar serviço..." bind:value={search} />
+      <select class="h-11 rounded-xl border px-3 text-sm" bind:value={grupoFilter}>
         <option value="todos">Todos os Grupos</option>
         {#each Array.from(new Set(rows.map(r => r.grupo).filter(Boolean))) as g}
           <option value={g}>{g}</option>
@@ -252,84 +274,93 @@
         <div class="flex items-center gap-1 rounded-xl bg-gray-50 ring-1 ring-pink-100 p-1">
           <button
             type="button"
-            class={segTabClass(statusFilter==='todos','text-gray-800')}
+            class={`${segTabClass(statusFilter==='todos','text-gray-800')} min-h-[44px]`}
             aria-pressed={statusFilter==='todos'}
             onclick={() => statusFilter='todos'}
           >Todos</button>
           <button
             type="button"
-            class={segTabClass(statusFilter==='prejuizo','text-red-600')}
+            class={`${segTabClass(statusFilter==='prejuizo','text-red-600')} min-h-[44px]`}
             aria-pressed={statusFilter==='prejuizo'}
             onclick={() => statusFilter='prejuizo'}
           >Prejuízo</button>
           <button
             type="button"
-            class={segTabClass(statusFilter==='abaixo','text-amber-600')}
+            class={`${segTabClass(statusFilter==='abaixo','text-amber-600')} min-h-[44px]`}
             aria-pressed={statusFilter==='abaixo'}
             onclick={() => statusFilter='abaixo'}
           >Abaixo da Margem</button>
           <button
             type="button"
-            class={segTabClass(statusFilter==='saudavel','text-green-600')}
+            class={`${segTabClass(statusFilter==='saudavel','text-green-600')} min-h-[44px]`}
             aria-pressed={statusFilter==='saudavel'}
             onclick={() => statusFilter='saudavel'}
           >Saudáveis</button>
         </div>
       </div>
-      <div class="ml-auto">
+      <span class="mx-1 hidden md:block h-6 w-px bg-gray-200" aria-hidden="true"></span>
+      
+     
         <div class="flex items-center rounded-2xl bg-slate-100 p-1">
-         <button  class="flex items-center justify-center
-                  w-11 h-10
-                  rounded-xl
-                  transition-all
-                  focus:outline-none
-                  {modoDetalhado
-                    ? 'text-slate-400 hover:bg-slate-200'
-                    : 'bg-indigo-500 text-white'}"
-            aria-label="Visualização compacta"
-            aria-pressed={!modoDetalhado}
-            title="Modo Compacto: visão rápida para decisão"
-            onclick={() => (modoDetalhado = false)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                class="w-5 h-5"
-                aria-hidden="true">
-              <rect x="4" y="5" width="7" height="7" rx="2" fill="currentColor" />
-              <rect x="13" y="5" width="7" height="7" rx="2" fill="currentColor" />
-              <rect x="4" y="13" width="7" height="7" rx="2" fill="currentColor" />
-              <rect x="13" y="13" width="7" height="7" rx="2" fill="currentColor" />
-            </svg>
-          </button>
+            <button  class="flex items-center justify-center
+                      w-11 h-11 cursor-pointer
+                      rounded-xl
+                      transition-all
+                      focus:outline-none
+                      {modoDetalhado
+                        ? 'text-slate-400 hover:bg-slate-200'
+                        : 'bg-indigo-500 text-white'}"
+                aria-label="Visualização compacta"
+                aria-pressed={!modoDetalhado}
+                title="Modo Compacto: visão rápida para decisão"
+                onclick={() => (modoDetalhado = false)}
+              >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                      class="w-5 h-5"
+                      aria-hidden="true">
+                    <rect x="4" y="5" width="7" height="7" rx="2" fill="currentColor" />
+                    <rect x="13" y="5" width="7" height="7" rx="2" fill="currentColor" />
+                    <rect x="4" y="13" width="7" height="7" rx="2" fill="currentColor" />
+                    <rect x="13" y="13" width="7" height="7" rx="2" fill="currentColor" />
+                  </svg>
+            </button>
 
-
-     <button  class="flex items-center justify-center
-                w-11 h-10
-                rounded-xl
-                transition-all
-                focus:outline-none
-                {modoDetalhado
-                  ? 'bg-indigo-500 text-white'
-                  : 'text-slate-400 hover:bg-slate-200'}"
-          aria-label="Visualização detalhada"
-          aria-pressed={modoDetalhado}
-          title="Modo Detalhado: visão completa de custos e composição"
-          onclick={() => (modoDetalhado = true)}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-              class="w-5 h-5"
-              aria-hidden="true">
-            <rect x="4" y="5" width="4" height="4" rx="1" fill="currentColor" />
-            <rect x="10" y="5.5" width="10" height="3" rx="1.5" fill="currentColor" />
-            <rect x="4" y="10" width="4" height="4" rx="1" fill="currentColor" />
-            <rect x="10" y="10.5" width="10" height="3" rx="1.5" fill="currentColor" />
-            <rect x="4" y="15" width="4" height="4" rx="1" fill="currentColor" />
-            <rect x="10" y="15.5" width="10" height="3" rx="1.5" fill="currentColor" />
-          </svg>
-        </button>
-
-
+            <button  class="flex items-center justify-center
+                        w-11 h-11 cursor-pointer
+                        rounded-xl
+                        transition-all
+                        focus:outline-none
+                        {modoDetalhado
+                          ? 'bg-indigo-500 text-white'
+                          : 'text-slate-400 hover:bg-slate-200'}"
+                  aria-label="Visualização detalhada"
+                  aria-pressed={modoDetalhado}
+                  title="Modo Detalhado: visão completa de custos e composição"
+                  onclick={() => (modoDetalhado = true)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                      class="w-5 h-5"
+                      aria-hidden="true">
+                    <rect x="4" y="5" width="4" height="4" rx="1" fill="currentColor" />
+                    <rect x="10" y="5.5" width="10" height="3" rx="1.5" fill="currentColor" />
+                    <rect x="4" y="10" width="4" height="4" rx="1" fill="currentColor" />
+                    <rect x="10" y="10.5" width="10" height="3" rx="1.5" fill="currentColor" />
+                    <rect x="4" y="15" width="4" height="4" rx="1" fill="currentColor" />
+                    <rect x="10" y="15.5" width="10" height="3" rx="1.5" fill="currentColor" />
+                  </svg>
+                </button>
         </div>
-      </div>
+     
+
+      <span class="mx-1 hidden md:block h-6 w-px bg-gray-200" aria-hidden="true"></span>
+      <label class="hidden md:block text-sm text-gray-600">Exibir</label>
+      <select class="h-11 rounded-xl border px-3 text-sm" bind:value={perPage}>
+        <option value={10}>10</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>
+
     </div>
     <Separator />
     <div class="p-4">
@@ -344,7 +375,8 @@
       {:else if error}
         <div class="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
       {:else}
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto -mx-2 md:mx-0" style="-webkit-overflow-scrolling: touch;">
+        <table class="w-full text-sm table-fixed">
           <thead class="text-gray-500">
             {#if !modoDetalhado}
               <tr>
@@ -379,16 +411,16 @@
             {/if}
           </thead>
           <tbody>
-            {#each filteredRows() as r}
+            {#each pageRows as r}
               {#if !modoDetalhado}
                 <tr class="border-t">
-                  <td>{r.nome}</td>
-                  <td class="text-gray-500">{r.grupo}</td>
-                  <td class="text-right">{formatCurrency(r.custoDireto)}</td>
-                  <td class="text-right">{formatCurrency(r.vendaAtual)}</td>
-                  <td class="text-right text-blue-600 font-semibold">{formatCurrency(r.vendaSugerida)}</td>
-                  <td class="text-right text-green-600 font-semibold">{formatCurrency(r.lucro)}</td>
-                  <td class="text-right">{formatNumber(r.margemPct, 0)}%</td>
+                  <td class="whitespace-normal break-words max-w-[260px] md:max-w-none">{r.nome}</td>
+                  <td class="text-gray-500 whitespace-normal break-words">{r.grupo}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatCurrency(r.custoDireto)}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatCurrency(r.vendaAtual)}</td>
+                  <td class="text-right text-blue-600 font-semibold whitespace-nowrap tabular-nums">{formatCurrency(r.vendaSugerida)}</td>
+                  <td class="text-right text-green-600 font-semibold whitespace-nowrap tabular-nums">{formatCurrency(r.lucro)}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatNumber(r.margemPct, 0)}%</td>
                   <td class="text-center">
                     {#if r.status==='SAUDÁVEL'}
                       <span class="rounded-md bg-green-100 text-green-700 px-2 py-1">Saudável</span>
@@ -400,29 +432,29 @@
                   </td>
                   <td class="text-center">
                     {#if r.status==='SAUDÁVEL'}
-                      <Button class="inline-flex items-center gap-2" variant="ghost" title="Ajustar preço" onclick={() => openConfirm([r.id])}>Ajustar preço</Button>
+                      <Button class="inline-flex items-center gap-2 min-h-[44px] min-w-[44px]" variant="ghost" title="Ajustar preço" onclick={() => openConfirm([r.id])}>Ajustar preço</Button>
                     {:else if r.status==='ABAIXO'}
-                      <Button class="inline-flex items-center gap-2" variant="default" onclick={() => openConfirm([r.id])} title="Aplicar sugestão">Aplicar sugestão</Button>
+                      <Button class="inline-flex items-center gap-2 min-h-[44px] min-w-[44px]" variant="default" onclick={() => openConfirm([r.id])} title="Aplicar sugestão">Aplicar sugestão</Button>
                     {:else}
-                      <Button class="inline-flex items-center gap-2" variant="destructive" onclick={() => openConfirm([r.id])} title="Corrigir preço">Corrigir preço</Button>
+                      <Button class="inline-flex items-center gap-2 min-h-[44px] min-w-[44px]" variant="destructive" onclick={() => openConfirm([r.id])} title="Corrigir preço">Corrigir preço</Button>
                     {/if}
                   </td>
                 </tr>
               {:else}
                 <tr class="border-t">
-                  <td>{r.nome}</td>
-                  <td class="text-gray-500">{r.grupo}</td>
-                  <td class="text-right">{formatCurrency(r.custoMaoObra)}</td>
-                  <td class="text-right">{formatCurrency(r.custoMateriais)}</td>
-                  <td class="text-right">{formatCurrency(r.custoDireto)}</td>
-                  <td class="text-right">{formatNumber(r.impostoFrac*100,1)}%</td>
-                  <td class="text-right">{formatNumber(r.fixoFrac*100,1)}%</td>
-                  <td class="text-right">{formatNumber(r.margemFrac*100,1)}%</td>
-                  <td class="text-right">{formatNumber(r.fatorPreco,2)}x</td>
-                  <td class="text-right">{formatCurrency(r.vendaAtual)}</td>
-                  <td class="text-right text-blue-600 font-semibold">{formatCurrency(r.vendaSugerida)}</td>
-                  <td class="text-right text-green-600 font-semibold">{formatCurrency(r.lucro)}</td>
-                  <td class="text-right">{formatNumber(r.margemPct,0)}%</td>
+                  <td class="whitespace-normal break-words max-w-[260px] md:max-w-none">{r.nome}</td>
+                  <td class="text-gray-500 whitespace-normal break-words">{r.grupo}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatCurrency(r.custoMaoObra)}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatCurrency(r.custoMateriais)}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatCurrency(r.custoDireto)}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatNumber(r.impostoFrac*100,1)}%</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatNumber(r.fixoFrac*100,1)}%</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatNumber(r.margemFrac*100,1)}%</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatNumber(r.fatorPreco,2)}x</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatCurrency(r.vendaAtual)}</td>
+                  <td class="text-right text-blue-600 font-semibold whitespace-nowrap tabular-nums">{formatCurrency(r.vendaSugerida)}</td>
+                  <td class="text-right text-green-600 font-semibold whitespace-nowrap tabular-nums">{formatCurrency(r.lucro)}</td>
+                  <td class="text-right whitespace-nowrap tabular-nums">{formatNumber(r.margemPct,0)}%</td>
                   <td class="text-center">
                     {#if r.status==='SAUDÁVEL'}
                       <span class="rounded-md bg-green-100 text-green-700 px-2 py-1">Saudável</span>
@@ -433,7 +465,7 @@
                     {/if}
                   </td>
                   <td class="text-center">
-                    <Button class="inline-flex items-center gap-2" variant={r.status==='SAUDÁVEL'?'ghost':(r.status==='ABAIXO'?'default':'destructive')} onclick={() => openConfirm([r.id])}>
+                    <Button class="inline-flex items-center gap-2 min-h-[44px] min-w-[44px]" variant={r.status==='SAUDÁVEL'?'ghost':(r.status==='ABAIXO'?'default':'destructive')} onclick={() => openConfirm([r.id])}>
                       {r.status==='SAUDÁVEL' ? 'Ajustar preço' : (r.status==='ABAIXO' ? 'Aplicar sugestão' : 'Corrigir preço')}
                     </Button>
                   </td>
@@ -453,6 +485,16 @@
             {/each}
           </tbody>
         </table>
+        </div>
+        <div class="mt-4">
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            perPage={perPage}
+            totalItems={totalItems}
+            onPageChange={onPageChange}
+          />
+        </div>
       {/if}
     </div>
   </div>

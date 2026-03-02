@@ -137,6 +137,51 @@ CREATE TABLE IF NOT EXISTS servico_materiais (
     CHECK (quantidade_usada > 0)
 );
 
+--Índices para Tabela servicos
+CREATE INDEX IF NOT EXISTS idx_servicos_atividade ON servicos(atividade_id);
+CREATE INDEX IF NOT EXISTS idx_servicos_ativo ON servicos(ativo);
+CREATE INDEX IF NOT EXISTS idx_servicos_grupo ON servicos(grupo);
+
+-- Busca por nome (ILIKE)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX IF NOT EXISTS idx_servicos_nome_trgm
+  ON servicos USING gin (nome gin_trgm_ops);
+
+  -- Busca preço vigente por serviço
+CREATE INDEX IF NOT EXISTS idx_precos_vigente_por_servico
+  ON precos_praticados(servico_id)
+  WHERE vigente = true;
+
+-- Busca por vigência
+CREATE INDEX IF NOT EXISTS idx_precos_vigencia
+  ON precos_praticados(servico_id, vigencia_inicio, vigencia_fim);
+
+--Garantir apenas 1 preço vigente por serviço
+CREATE UNIQUE INDEX IF NOT EXISTS uq_preco_vigente_unico_por_servico
+  ON precos_praticados(servico_id)
+  WHERE vigente = true;
+
+--Índices para servico_materiais
+CREATE INDEX IF NOT EXISTS idx_sm_servico ON servico_materiais(servico_id);
+CREATE INDEX IF NOT EXISTS idx_sm_material ON servico_materiais(material_id);
+
+-- Evitar material duplicado no mesmo serviço
+CREATE UNIQUE INDEX IF NOT EXISTS uq_sm_servico_material
+  ON servico_materiais(servico_id, material_id);
+
+-- Índices para materiais
+CREATE INDEX IF NOT EXISTS idx_materiais_produto_trgm
+  ON materiais USING gin (produto gin_trgm_ops);
+
+-- Garantir apenas uma configuração ativa
+CREATE UNIQUE INDEX IF NOT EXISTS uq_config_ativa_unica
+  ON configuracoes(ativo)
+  WHERE ativo = true;
+
+-- Email único (case insensitive)
+CREATE UNIQUE INDEX IF NOT EXISTS uq_usuarios_email
+  ON usuarios(lower(email));
 
 -- Inserir usuário administrador
 INSERT INTO public.usuarios (nome, email, senha, perfil,  ativo)

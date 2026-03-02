@@ -61,7 +61,7 @@
       <li>
         <button
           type="button"
-          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           onclick={goPrev}
           disabled={isFirstPage}
           aria-label="Página anterior"
@@ -74,18 +74,18 @@
       {#each pages as p}
         {#if p === 'ellipsis'}
           <li>
-            <span class="inline-flex h-8 min-w-[24px] items-center justify-center px-1 text-sm text-gray-400">…</span>
+            <span class="inline-flex h-11 min-w-[24px] items-center justify-center px-1 text-sm text-gray-400">…</span>
           </li>
         {:else}
           <li>
             {#if p === currentPage}
-              <span class="inline-flex h-8 min-w-[32px] items-center justify-center rounded-md border border-pink-200 bg-pink-100 px-2 text-sm font-semibold text-pink-700">
+              <span class="inline-flex h-11 min-w-[44px] items-center justify-center rounded-md border border-pink-200 bg-pink-100 px-2 text-sm font-semibold text-pink-700">
                 {p}
               </span>
             {:else}
               <button
                 type="button"
-                class="inline-flex h-8 min-w-[32px] items-center justify-center rounded-md border border-transparent bg-white px-2 text-sm font-semibold text-blue-600 transition-colors hover:bg-gray-50"
+                class="inline-flex h-11 min-w-[44px] items-center justify-center rounded-md border border-transparent bg-white px-2 text-sm font-semibold text-blue-600 transition-colors hover:bg-gray-50 cursor-pointer"
                 onclick={() => onPageChange(p)}
                 aria-label={`Página ${p}`}
                 title={`Página ${p}`}
@@ -100,7 +100,7 @@
       <li>
         <button
           type="button"
-          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           onclick={goNext}
           disabled={isLastPage}
           aria-label="Próxima página"
