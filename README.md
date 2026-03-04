@@ -93,32 +93,27 @@ Sistema aplicado em empresa real: **Finesse Centro Integrado de Saúde, Beleza e
 
 ## Como rodar o projeto
 
-### Banco de Dados (Docker)
+Pré‑requisitos
 
-```bash
-docker compose up -d
-```
+- Docker Desktop instalado e em execução.
+- Node.js LTS instalado (npm, pnpm ou yarn).
+- Porta 5432 livre (PostgreSQL) e 8080 livre (backend).
+- Porta 5173 livre (Vite dev) e 4173 para preview.
 
-pgAdmin → http://localhost:8081
+Com Docker (recomendado)
 
----
-
-### Backend
-
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
----
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- No diretório raiz do projeto:
+  - docker compose up -d
+- Isso sobe:
+  - Postgres em localhost:5432
+  - Backend Spring Boot em http://localhost:8080
+  - pgAdmin em http://localhost:8081 (login: admin@finesse.com / admin_password)
+- Suba o frontend:
+  - cd frontend
+  - npm install
+  - Crie o arquivo .env com: BACKEND_URL= http://localhost:8080
+  - npm run dev
+- Abra o app em http://localhost:5173
 
 ---
 
