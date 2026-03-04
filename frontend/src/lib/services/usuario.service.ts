@@ -82,6 +82,7 @@ class UsuarioService {
       body: JSON.stringify({
         nome: data.nome,
         email: data.email,
+        senha: data.senha,
         perfil: data.perfil
       })
     })

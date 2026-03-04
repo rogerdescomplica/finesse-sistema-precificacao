@@ -150,15 +150,11 @@ public class UsuarioController {
      */
     @PutMapping("/{id}/senha")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> alterarSenha(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> request
-    ) {
+    public ResponseEntity<?> alterarSenha(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
             String novaSenha = request.get("novaSenha");
             if (novaSenha == null || novaSenha.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Nova senha é obrigatória"));
+                return ResponseEntity.badRequest().body(Map.of("error", "Nova senha é obrigatória"));
             }
 
             usuarioService.alterarSenha(id, novaSenha);
@@ -169,7 +165,7 @@ public class UsuarioController {
         }
     }
 
-     @Operation(summary = "Alterar status (ativar/inativar)")
+    @Operation(summary = "Alterar status (ativar/inativar)")
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<UsuarioRecord> toggle(@PathVariable Long id, @RequestBody Map<String, Object> payload) {

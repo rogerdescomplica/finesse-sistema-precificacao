@@ -119,9 +119,6 @@ async update(id: number, data: UsuarioInput) {
   this.mutating = true
   try {
     await usuarioService.update(id, data)
-    if ((data.senha || '').trim().length > 0) {
-      await usuarioService.alterarSenha(id, String(data.senha))
-    }
     await this.load()
   } finally {
     this.mutating = false
